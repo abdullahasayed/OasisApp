@@ -408,6 +408,7 @@ export const getSlotBookingsCount = async (
 };
 
 export interface InsertOrderInput {
+  orderId: string;
   orderNumber: string;
   customerName: string;
   customerPhone: string;
@@ -429,6 +430,7 @@ export const insertOrder = async (
 ): Promise<DbOrder> => {
   const result = await client.query<Record<string, unknown>>(
     `INSERT INTO orders (
+      id,
       order_number,
       customer_name,
       customer_phone,
@@ -443,9 +445,10 @@ export const insertOrder = async (
       payment_client_secret,
       payment_provider
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
     RETURNING *`,
     [
+      payload.orderId,
       payload.orderNumber,
       payload.customerName,
       payload.customerPhone,

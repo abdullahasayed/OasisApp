@@ -1,0 +1,34 @@
+name: OasisMarkets
+options:
+  minimumXcodeGenVersion: 2.38.0
+packages: {}
+settings:
+  base:
+    SWIFT_VERSION: 5.10
+    IPHONEOS_DEPLOYMENT_TARGET: 17.0
+targets:
+  OasisMarkets:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - OasisMarkets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.oasismarkets.app
+        INFOPLIST_FILE: OasisMarkets/Resources/Info.plist
+        DEVELOPMENT_TEAM: ""
+    info:
+      path: OasisMarkets/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Oasis Markets
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
