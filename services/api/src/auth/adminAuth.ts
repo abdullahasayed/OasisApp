@@ -41,7 +41,7 @@ export const issueAdminTokens = async (
 
   const refreshToken = await app.jwt.sign(payload, {
     expiresIn: config.JWT_REFRESH_EXPIRES_IN,
-    secret: config.JWT_REFRESH_SECRET
+    key: config.JWT_REFRESH_SECRET
   });
 
   return {

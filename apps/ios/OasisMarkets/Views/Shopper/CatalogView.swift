@@ -25,27 +25,31 @@ struct CatalogView: View {
                     .foregroundStyle(.red)
             } else {
                 List(viewModel.products) { product in
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(product.name)
-                                    .font(.headline)
-                                Text(product.priceLabel)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                    NavigationLink {
+                        ProductDetailView(product: product)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(product.name)
+                                        .font(.headline)
+                                    Text(product.priceLabel)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Button("Add") {
+                                    let quantity = product.unit == .lb ? 1.0 : 1.0
+                                    appState.addToCart(product: product, quantity: quantity)
+                                }
+                                .buttonStyle(.borderedProminent)
                             }
-                            Spacer()
-                            Button("Add") {
-                                let quantity = product.unit == .lb ? 1.0 : 1.0
-                                appState.addToCart(product: product, quantity: quantity)
-                            }
-                            .buttonStyle(.borderedProminent)
+                            Text(product.description)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
-                        Text(product.description)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
                 }
                 .listStyle(.plain)
             }

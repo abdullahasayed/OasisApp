@@ -22,4 +22,29 @@ final class AdminInventoryViewModel: ObservableObject {
             errorMessage = error.localizedDescription
         }
     }
+
+    func updateStock(
+        for product: Product,
+        stockQuantity: Double,
+        apiClient: ApiClient,
+        token: String?
+    ) async {
+        guard let token else {
+            errorMessage = "Missing admin token"
+            return
+        }
+
+        do {
+            let updated = try await apiClient.updateProductStock(
+                accessToken: token,
+                productId: product.id,
+                stockQuantity: stockQuantity
+            )
+            if let index = products.firstIndex(where: { $0.id == updated.id }) {
+                products[index] = updated
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
 }

@@ -85,6 +85,25 @@ final class ApiClient: ObservableObject {
         return response.products
     }
 
+    func updateProductStock(
+        accessToken: String,
+        productId: UUID,
+        stockQuantity: Double
+    ) async throws -> Product {
+        struct Payload: Codable {
+            let stockQuantity: Double
+        }
+
+        var request = URLRequest(
+            url: baseURL.appending(path: "/v1/admin/products/\(productId.uuidString)/stock")
+        )
+        request.httpMethod = "PATCH"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try encoder.encode(Payload(stockQuantity: stockQuantity))
+        return try await send(request)
+    }
+
     func fetchAdminOrders(accessToken: String, status: OrderStatus?) async throws -> [AdminOrder] {
         var components = URLComponents(
             url: baseURL.appending(path: "/v1/admin/orders"),
@@ -114,18 +133,34 @@ final class ApiClient: ObservableObject {
         let _: AdminOrder = try await send(request)
     }
 
-    func fulfillOrder(accessToken: String, orderId: UUID) async throws -> URL {
-        struct Response: Codable {
-            let receiptUrl: URL
-            let escposPayloadBase64: String
-        }
-
+    func fulfillOrder(accessToken: String, orderId: UUID) async throws -> FulfillOrderResponse {
         var request = URLRequest(url: baseURL.appending(path: "/v1/admin/orders/\(orderId.uuidString)/fulfill"))
         request.httpMethod = "POST"
         request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 
-        let response: Response = try await send(request)
-        return response.receiptUrl
+        return try await send(request)
+    }
+
+    func refundOrder(
+        accessToken: String,
+        orderId: UUID,
+        amountCents: Int,
+        reason: String
+    ) async throws {
+        struct Payload: Codable {
+            let amountCents: Int
+            let reason: String
+        }
+
+        var request = URLRequest(
+            url: baseURL.appending(path: "/v1/admin/orders/\(orderId.uuidString)/refund")
+        )
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try encoder.encode(Payload(amountCents: amountCents, reason: reason))
+
+        let _: EmptyResponse = try await send(request)
     }
 
     private func send<Response: Decodable>(_ request: URLRequest) async throws -> Response {
@@ -164,3 +199,10 @@ enum ApiError: LocalizedError {
         }
     }
 }
+
+struct FulfillOrderResponse: Codable {
+    let receiptUrl: URL
+    let escposPayloadBase64: String
+}
+
+private struct EmptyResponse: Codable {}

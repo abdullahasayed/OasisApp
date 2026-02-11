@@ -1,16 +1,17 @@
 import { beforeAll, describe, expect, it } from "vitest";
+import type { FastifyInstance } from "fastify";
 import { Pool } from "pg";
-import { buildApp } from "../src/app.js";
 
 const runIntegration = process.env.RUN_DB_INTEGRATION === "true";
 
 const suite = runIntegration ? describe : describe.skip;
 
 suite("API integration", () => {
-  let app: Awaited<ReturnType<typeof buildApp>>;
+  let app: FastifyInstance;
   let pool: Pool;
 
   beforeAll(async () => {
+    const { buildApp } = await import("../src/app.js");
     app = await buildApp();
     pool = new Pool({ connectionString: process.env.DATABASE_URL });
 

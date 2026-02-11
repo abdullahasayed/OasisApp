@@ -98,11 +98,27 @@ struct AdminOrdersView: View {
                                 }
                             }
                             .buttonStyle(.bordered)
+
+                            Button("Refund") {
+                                Task {
+                                    await viewModel.refund(
+                                        order: order,
+                                        apiClient: apiClient,
+                                        token: appState.adminAccessToken
+                                    )
+                                }
+                            }
+                            .buttonStyle(.bordered)
                         }
                     }
                     .padding(.vertical, 4)
                 }
                 .listStyle(.plain)
+            }
+
+            if let receiptURL = viewModel.lastReceiptURL {
+                Link("Open Latest Receipt", destination: receiptURL)
+                    .font(.footnote)
             }
         }
         .task {

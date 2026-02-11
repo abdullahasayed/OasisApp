@@ -9,9 +9,9 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "pnpm -r build",
-    "dev": "pnpm --filter @oasis/api dev",
-    "test": "pnpm -r test",
-    "lint": "pnpm -r lint"
+    "build": "npm run build --workspaces --if-present",
+    "dev": "npm run dev --workspace @oasis/api",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
   }
 }

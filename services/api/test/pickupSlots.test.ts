@@ -46,7 +46,11 @@ describe("pickup slot generation", () => {
       bookings.set(slotStart, 3);
     }
 
-    const slots = buildPickupSlotsForDate("2026-02-11", config, bookings);
+    const now = DateTime.fromISO("2026-02-11T08:00:00", {
+      zone: config.timezone
+    });
+
+    const slots = buildPickupSlotsForDate("2026-02-11", config, bookings, now);
     expect(slots[0]?.available).toBe(1);
   });
 });
