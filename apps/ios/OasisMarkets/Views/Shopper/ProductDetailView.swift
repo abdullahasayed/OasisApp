@@ -17,26 +17,19 @@ struct ProductDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                AsyncImage(url: product.imageUrl) { phase in
-                    switch phase {
-                    case let .success(image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    default:
-                        ZStack {
-                            LinearGradient(
-                                colors: [
-                                    product.category.categoryTint.opacity(0.6),
-                                    product.category.categoryTint.opacity(0.24)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                            Image(systemName: product.category.symbolName)
-                                .font(.system(size: 48))
-                                .foregroundStyle(.white)
-                        }
+                OasisRemoteImage(url: product.imageUrl) {
+                    ZStack {
+                        LinearGradient(
+                            colors: [
+                                product.category.categoryTint.opacity(0.6),
+                                product.category.categoryTint.opacity(0.24)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        Image(systemName: product.category.symbolName)
+                            .font(.system(size: 48))
+                            .foregroundStyle(.white)
                     }
                 }
                 .frame(height: 260)

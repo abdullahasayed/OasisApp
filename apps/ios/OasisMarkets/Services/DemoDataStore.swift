@@ -21,7 +21,7 @@ final class DemoDataStore {
                 unit: .lb,
                 priceCents: 1899,
                 stockQuantity: 42,
-                imageUrl: URL(string: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f")!,
+                imageUrl: Self.demoImageURL(path: "photo-1607623814075-e51df1bdc82f"),
                 imageKey: "demo/lamb.jpg",
                 active: true,
                 createdAt: createdAt,
@@ -35,7 +35,7 @@ final class DemoDataStore {
                 unit: .lb,
                 priceCents: 1299,
                 stockQuantity: 60,
-                imageUrl: URL(string: "https://images.unsplash.com/photo-1625944228740-f4b0f9f7b4cc")!,
+                imageUrl: Self.demoImageURL(path: "photo-1625944228740-f4b0f9f7b4cc"),
                 imageKey: "demo/beef.jpg",
                 active: true,
                 createdAt: createdAt,
@@ -49,7 +49,7 @@ final class DemoDataStore {
                 unit: .each,
                 priceCents: 799,
                 stockQuantity: 120,
-                imageUrl: URL(string: "https://images.unsplash.com/photo-1603048297172-c92544798d5a")!,
+                imageUrl: Self.demoImageURL(path: "photo-1603048297172-c92544798d5a"),
                 imageKey: "demo/dates.jpg",
                 active: true,
                 createdAt: createdAt,
@@ -63,7 +63,7 @@ final class DemoDataStore {
                 unit: .lb,
                 priceCents: 249,
                 stockQuantity: 85,
-                imageUrl: URL(string: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea")!,
+                imageUrl: Self.demoImageURL(path: "photo-1592924357228-91a4daadcfea"),
                 imageKey: "demo/tomatoes.jpg",
                 active: true,
                 createdAt: createdAt,
@@ -77,7 +77,7 @@ final class DemoDataStore {
                 unit: .lb,
                 priceCents: 399,
                 stockQuantity: 110,
-                imageUrl: URL(string: "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb")!,
+                imageUrl: Self.demoImageURL(path: "photo-1568702846914-96b305d2aaeb"),
                 imageKey: "demo/apples.jpg",
                 active: true,
                 createdAt: createdAt,
@@ -380,6 +380,12 @@ final class DemoDataStore {
         formatter.calendar = Calendar(identifier: .gregorian)
         formatter.dateFormat = "yyyyMMdd"
         return formatter.string(from: date)
+    }
+
+    private static func demoImageURL(path: String) -> URL {
+        URL(
+            string: "https://images.unsplash.com/\(path)?auto=format&fit=crop&w=720&q=70"
+        )!
     }
 }
 

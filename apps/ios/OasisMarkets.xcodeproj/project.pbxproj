@@ -34,6 +34,7 @@
 		C310EE5009F59E5A7293EAB5 /* CartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1F22DF4D3FB946E6E23627 /* CartView.swift */; };
 		D2A98548EAC1CA8E73A1CC29 /* AdminOrdersViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5150BD8E47F2D4716FB915 /* AdminOrdersViewModel.swift */; };
 		D98FAC1ABFBB48FBB0493C22 /* ApiClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C95DC8EFF5C2CD70FA58F98 /* ApiClient.swift */; };
+		E95FD37BD1CD438296192295 /* OasisRemoteImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71E5B25E4D4E9108482B06BC /* OasisRemoteImage.swift */; };
 		F83A18CA8E4F3A3FF16DA747 /* OasisBrandViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8FF3CBB570B6B6B64ACCB25 /* OasisBrandViews.swift */; };
 /* End PBXBuildFile section */
 
@@ -53,6 +54,7 @@
 		5FCD4022292B1ADF92496FBD /* AdminOrdersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminOrdersView.swift; sourceTree = "<group>"; };
 		6E21E6FC5D890BCFF089F687 /* ReceiptPrinterClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptPrinterClient.swift; sourceTree = "<group>"; };
 		6FB23316EBFC3D3E605AE866 /* DomainModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainModels.swift; sourceTree = "<group>"; };
+		71E5B25E4D4E9108482B06BC /* OasisRemoteImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OasisRemoteImage.swift; sourceTree = "<group>"; };
 		7E0893CF79F73BD326BF80CF /* AdminAuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminAuthViewModel.swift; sourceTree = "<group>"; };
 		82B8921500437CD6B0595AD9 /* CheckoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutViewModel.swift; sourceTree = "<group>"; };
 		9A1F22DF4D3FB946E6E23627 /* CartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartView.swift; sourceTree = "<group>"; };
@@ -159,6 +161,7 @@
 			children = (
 				A8FF3CBB570B6B6B64ACCB25 /* OasisBrandViews.swift */,
 				A5D4D8E9FCD8A68B792E3857 /* OasisDesignSystem.swift */,
+				71E5B25E4D4E9108482B06BC /* OasisRemoteImage.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -273,6 +276,7 @@
 				F83A18CA8E4F3A3FF16DA747 /* OasisBrandViews.swift in Sources */,
 				BC8FAE031940F8E87BD55A76 /* OasisDesignSystem.swift in Sources */,
 				1239A246475E1C0F9B1693B8 /* OasisMarketsApp.swift in Sources */,
+				E95FD37BD1CD438296192295 /* OasisRemoteImage.swift in Sources */,
 				382D80D2E9D82A2FA0486FD2 /* OrderLookupView.swift in Sources */,
 				614B5622D849860F7E06E410 /* OrderLookupViewModel.swift in Sources */,
 				868DC0DE02C986604CD3C94A /* PaymentClient.swift in Sources */,

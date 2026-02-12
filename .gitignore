@@ -13,3 +13,5 @@ infra/.data
 apps/ios/.derivedData
 apps/ios/xcodebuild.log
 *.xcuserstate
+**/*.xcodeproj/xcuserdata/
+**/*.xcworkspace/xcuserdata/

@@ -54,7 +54,16 @@ struct RootView: View {
 
                     Toggle(isOn: Binding(
                         get: { apiClient.isDemoMode },
-                        set: { apiClient.setDemoMode($0) }
+                        set: {
+                            let previous = apiClient.isDemoMode
+                            apiClient.setDemoMode($0)
+
+                            if previous != $0 {
+                                appState.adminAccessToken = nil
+                                appState.adminRefreshToken = nil
+                                appState.appMode = .shopper
+                            }
+                        }
                     )) {
                         Text("Use Demo Data (No Backend Required)")
                             .font(.system(size: 13, weight: .semibold, design: .default))

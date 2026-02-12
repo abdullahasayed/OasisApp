@@ -86,9 +86,23 @@ struct CatalogView: View {
         .scrollIndicators(.hidden)
         .task {
             await viewModel.load(apiClient: apiClient)
+            prefetchTopImages()
+        }
+        .onChange(of: apiClient.isDemoMode) {
+            Task {
+                await viewModel.load(apiClient: apiClient, force: true)
+                prefetchTopImages()
+            }
+        }
+        .onChange(of: viewModel.products.map(\.id)) {
+            prefetchTopImages()
         }
         .animation(.spring(response: 0.35, dampingFraction: 0.86), value: viewModel.products.count)
         .animation(.easeInOut(duration: 0.2), value: viewModel.selectedCategory)
+    }
+
+    private func prefetchTopImages() {
+        ImageLoader.prefetch(urls: Array(viewModel.products.prefix(10)).map(\.imageUrl))
     }
 }
 
@@ -98,26 +112,19 @@ private struct ProductCatalogCard: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: product.imageUrl) { phase in
-                switch phase {
-                case let .success(image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                default:
-                    ZStack {
-                        LinearGradient(
-                            colors: [
-                                product.category.categoryTint.opacity(0.55),
-                                product.category.categoryTint.opacity(0.22)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                        Image(systemName: product.category.symbolName)
-                            .font(.system(size: 20))
-                            .foregroundStyle(.white)
-                    }
+            OasisRemoteImage(url: product.imageUrl) {
+                ZStack {
+                    LinearGradient(
+                        colors: [
+                            product.category.categoryTint.opacity(0.55),
+                            product.category.categoryTint.opacity(0.22)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    Image(systemName: product.category.symbolName)
+                        .font(.system(size: 20))
+                        .foregroundStyle(.white)
                 }
             }
             .frame(width: 82, height: 82)

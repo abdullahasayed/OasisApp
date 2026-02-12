@@ -11,35 +11,51 @@ final class CheckoutViewModel: ObservableObject {
     @Published var createdOrder: CreateOrderResponse?
 
     private let paymentClient: PaymentClient
+    private var activeSlotsRequestID: UUID?
 
     init(paymentClient: PaymentClient = StripePaymentClient()) {
         self.paymentClient = paymentClient
     }
 
     func loadSlots(apiClient: ApiClient, date: Date = Date()) async {
+        let requestID = UUID()
+        activeSlotsRequestID = requestID
         errorMessage = nil
         do {
-            availableSlots = try await apiClient.fetchPickupSlots(date: date).filter { $0.available > 0 }
-            if selectedSlot == nil {
+            let slots = try await apiClient.fetchPickupSlots(date: date).filter { $0.available > 0 }
+            guard activeSlotsRequestID == requestID else { return }
+            availableSlots = slots
+
+            if let current = selectedSlot,
+               !availableSlots.contains(where: { $0.id == current.id }) {
+                selectedSlot = availableSlots.first
+            } else if selectedSlot == nil {
                 selectedSlot = availableSlots.first
             }
         } catch {
+            guard activeSlotsRequestID == requestID else { return }
             errorMessage = error.localizedDescription
         }
     }
 
     func submitOrder(apiClient: ApiClient, cartItems: [CartItem]) async {
-        guard !customerName.trimmingCharacters(in: .whitespaces).isEmpty else {
+        let normalizedName = customerName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedPhone = customerPhone.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !normalizedName.isEmpty else {
+            createdOrder = nil
             errorMessage = "Full name is required"
             return
         }
 
-        guard !customerPhone.trimmingCharacters(in: .whitespaces).isEmpty else {
+        guard !normalizedPhone.isEmpty else {
+            createdOrder = nil
             errorMessage = "Phone number is required"
             return
         }
 
         guard let selectedSlot else {
+            createdOrder = nil
             errorMessage = "Select a pickup slot"
             return
         }
@@ -53,14 +69,15 @@ final class CheckoutViewModel: ObservableObject {
         }
 
         let payload = CreateOrderRequest(
-            customerName: customerName,
-            customerPhone: customerPhone,
+            customerName: normalizedName,
+            customerPhone: normalizedPhone,
             pickupSlotStartIso: selectedSlot.startIso,
             items: lineItems
         )
 
         isSubmitting = true
         errorMessage = nil
+        createdOrder = nil
         defer { isSubmitting = false }
 
         do {
