@@ -105,6 +105,8 @@ struct AdminOrdersView: View {
         .task {
             await viewModel.load(apiClient: apiClient, token: appState.adminAccessToken)
         }
+        .animation(.easeInOut(duration: 0.22), value: viewModel.orders.count)
+        .animation(.easeInOut(duration: 0.22), value: viewModel.errorMessage)
     }
 }
 

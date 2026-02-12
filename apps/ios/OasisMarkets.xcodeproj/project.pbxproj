@@ -1,0 +1,469 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0074C408179ABB4EACF186E2 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F45BECB3928AB44760B07AF4 /* CatalogView.swift */; };
+		090AD7940FE7A56BE7C15619 /* DomainModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FB23316EBFC3D3E605AE866 /* DomainModels.swift */; };
+		0B9149D82DE24E8115A6AAAE /* AdminDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01FA29105C0BD960403455A7 /* AdminDashboardView.swift */; };
+		1239A246475E1C0F9B1693B8 /* OasisMarketsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE227CA61C36E441E489D40C /* OasisMarketsApp.swift */; };
+		252406742BC5255D0641E666 /* AdminInventoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFAF39F6A8FF3805DD6ABAB6 /* AdminInventoryView.swift */; };
+		2ECEF23453870916F5C20FCF /* AdminLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C552371D2D34F4F4F64CFC66 /* AdminLoginView.swift */; };
+		330C8C5EDD95F34B8D06692A /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8710BFD45C34240C71E50F /* ImageLoader.swift */; };
+		37FA5BC76170C8D838892FA1 /* ReceiptPrinterClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E21E6FC5D890BCFF089F687 /* ReceiptPrinterClient.swift */; };
+		382D80D2E9D82A2FA0486FD2 /* OrderLookupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2551EF8E76FD533CEC502F96 /* OrderLookupView.swift */; };
+		49FBE8D247524B6591A6081B /* ProductDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8A21DD9D6E17FEAFAEBD5C /* ProductDetailView.swift */; };
+		5F4E9618C9D0765BE349BE6F /* AdminInventoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECC366DF787C6752F549239C /* AdminInventoryViewModel.swift */; };
+		614B5622D849860F7E06E410 /* OrderLookupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD5A3520C3514064195FA0F0 /* OrderLookupViewModel.swift */; };
+		63FB71852A3692091F90AD22 /* AdminAuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E0893CF79F73BD326BF80CF /* AdminAuthViewModel.swift */; };
+		6FE70EAF4097A2A9164C8D5A /* DemoDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3122CE461F0088F59B01CCF7 /* DemoDataStore.swift */; };
+		728CF2AA03B8D8798F1ED66F /* CheckoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82B8921500437CD6B0595AD9 /* CheckoutViewModel.swift */; };
+		78611A1B4DC74334720155A2 /* CheckoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE1B73192F375923DBA8441E /* CheckoutView.swift */; };
+		7E230044BCAE9E179A1415ED /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00D8A4D6AFF08AC66B1DAA6F /* AppState.swift */; };
+		868DC0DE02C986604CD3C94A /* PaymentClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FE175A09277375848A0A4CE /* PaymentClient.swift */; };
+		874056175ED18915EEB0D49D /* AdminOrdersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FCD4022292B1ADF92496FBD /* AdminOrdersView.swift */; };
+		AC6CA2578D1036823BC9B7C1 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 028B35AFB57882888B6DF0BA /* RootView.swift */; };
+		B11ED42851F8CC2D7DEC5A69 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BB3AF5BFA30ACC9257794F4 /* SessionStore.swift */; };
+		B33C1F427C2CF9E4C0D58D89 /* CatalogViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B2FAC4019874C1CFC04395 /* CatalogViewModel.swift */; };
+		BC8FAE031940F8E87BD55A76 /* OasisDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D4D8E9FCD8A68B792E3857 /* OasisDesignSystem.swift */; };
+		BCCE0DA039B4DC044B0983A5 /* ShopperShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C5BEEEDEE66088947440A2 /* ShopperShellView.swift */; };
+		C310EE5009F59E5A7293EAB5 /* CartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1F22DF4D3FB946E6E23627 /* CartView.swift */; };
+		D2A98548EAC1CA8E73A1CC29 /* AdminOrdersViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5150BD8E47F2D4716FB915 /* AdminOrdersViewModel.swift */; };
+		D98FAC1ABFBB48FBB0493C22 /* ApiClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C95DC8EFF5C2CD70FA58F98 /* ApiClient.swift */; };
+		F83A18CA8E4F3A3FF16DA747 /* OasisBrandViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8FF3CBB570B6B6B64ACCB25 /* OasisBrandViews.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		00D8A4D6AFF08AC66B1DAA6F /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		01FA29105C0BD960403455A7 /* AdminDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminDashboardView.swift; sourceTree = "<group>"; };
+		028B35AFB57882888B6DF0BA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		0FE175A09277375848A0A4CE /* PaymentClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentClient.swift; sourceTree = "<group>"; };
+		1BB3AF5BFA30ACC9257794F4 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
+		1C95DC8EFF5C2CD70FA58F98 /* ApiClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiClient.swift; sourceTree = "<group>"; };
+		2551EF8E76FD533CEC502F96 /* OrderLookupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderLookupView.swift; sourceTree = "<group>"; };
+		26814C607D7F8D5735F81E3F /* OasisMarkets.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OasisMarkets.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3122CE461F0088F59B01CCF7 /* DemoDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoDataStore.swift; sourceTree = "<group>"; };
+		3C5150BD8E47F2D4716FB915 /* AdminOrdersViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminOrdersViewModel.swift; sourceTree = "<group>"; };
+		4F0007ADDC7976294D68C949 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5B8A21DD9D6E17FEAFAEBD5C /* ProductDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailView.swift; sourceTree = "<group>"; };
+		5FCD4022292B1ADF92496FBD /* AdminOrdersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminOrdersView.swift; sourceTree = "<group>"; };
+		6E21E6FC5D890BCFF089F687 /* ReceiptPrinterClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptPrinterClient.swift; sourceTree = "<group>"; };
+		6FB23316EBFC3D3E605AE866 /* DomainModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainModels.swift; sourceTree = "<group>"; };
+		7E0893CF79F73BD326BF80CF /* AdminAuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminAuthViewModel.swift; sourceTree = "<group>"; };
+		82B8921500437CD6B0595AD9 /* CheckoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutViewModel.swift; sourceTree = "<group>"; };
+		9A1F22DF4D3FB946E6E23627 /* CartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartView.swift; sourceTree = "<group>"; };
+		A5D4D8E9FCD8A68B792E3857 /* OasisDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OasisDesignSystem.swift; sourceTree = "<group>"; };
+		A8FF3CBB570B6B6B64ACCB25 /* OasisBrandViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OasisBrandViews.swift; sourceTree = "<group>"; };
+		AD5A3520C3514064195FA0F0 /* OrderLookupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderLookupViewModel.swift; sourceTree = "<group>"; };
+		BC8710BFD45C34240C71E50F /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
+		BE1B73192F375923DBA8441E /* CheckoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutView.swift; sourceTree = "<group>"; };
+		C0B2FAC4019874C1CFC04395 /* CatalogViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogViewModel.swift; sourceTree = "<group>"; };
+		C552371D2D34F4F4F64CFC66 /* AdminLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminLoginView.swift; sourceTree = "<group>"; };
+		D1C5BEEEDEE66088947440A2 /* ShopperShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopperShellView.swift; sourceTree = "<group>"; };
+		ECC366DF787C6752F549239C /* AdminInventoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminInventoryViewModel.swift; sourceTree = "<group>"; };
+		EE227CA61C36E441E489D40C /* OasisMarketsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OasisMarketsApp.swift; sourceTree = "<group>"; };
+		F45BECB3928AB44760B07AF4 /* CatalogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogView.swift; sourceTree = "<group>"; };
+		FFAF39F6A8FF3805DD6ABAB6 /* AdminInventoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminInventoryView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		034EEFD73CF2DF08DE66900C /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				1C95DC8EFF5C2CD70FA58F98 /* ApiClient.swift */,
+				3122CE461F0088F59B01CCF7 /* DemoDataStore.swift */,
+				BC8710BFD45C34240C71E50F /* ImageLoader.swift */,
+				0FE175A09277375848A0A4CE /* PaymentClient.swift */,
+				6E21E6FC5D890BCFF089F687 /* ReceiptPrinterClient.swift */,
+				1BB3AF5BFA30ACC9257794F4 /* SessionStore.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		04D6766817CCC54BC3D38FB3 /* Shopper */ = {
+			isa = PBXGroup;
+			children = (
+				9A1F22DF4D3FB946E6E23627 /* CartView.swift */,
+				F45BECB3928AB44760B07AF4 /* CatalogView.swift */,
+				BE1B73192F375923DBA8441E /* CheckoutView.swift */,
+				2551EF8E76FD533CEC502F96 /* OrderLookupView.swift */,
+				5B8A21DD9D6E17FEAFAEBD5C /* ProductDetailView.swift */,
+				D1C5BEEEDEE66088947440A2 /* ShopperShellView.swift */,
+			);
+			path = Shopper;
+			sourceTree = "<group>";
+		};
+		0E826606B9299BC876A646FA /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				028B35AFB57882888B6DF0BA /* RootView.swift */,
+				F51E5D3E1505719247CCC6FC /* Admin */,
+				7FF1BD8B828F392F14DD9D5E /* Shared */,
+				04D6766817CCC54BC3D38FB3 /* Shopper */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		2B18C41FE755763B6744B95B /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				7E0893CF79F73BD326BF80CF /* AdminAuthViewModel.swift */,
+				ECC366DF787C6752F549239C /* AdminInventoryViewModel.swift */,
+				3C5150BD8E47F2D4716FB915 /* AdminOrdersViewModel.swift */,
+				C0B2FAC4019874C1CFC04395 /* CatalogViewModel.swift */,
+				82B8921500437CD6B0595AD9 /* CheckoutViewModel.swift */,
+				AD5A3520C3514064195FA0F0 /* OrderLookupViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		35923C3129EEA785728007E6 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				00D8A4D6AFF08AC66B1DAA6F /* AppState.swift */,
+				EE227CA61C36E441E489D40C /* OasisMarketsApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		41B8DA004DF986222D874652 = {
+			isa = PBXGroup;
+			children = (
+				90C2E4BAB67077213F234BCC /* OasisMarkets */,
+				43421CEA22E41BCA8A307597 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		43421CEA22E41BCA8A307597 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				26814C607D7F8D5735F81E3F /* OasisMarkets.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6DCC206659E844117A076B80 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				4F0007ADDC7976294D68C949 /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		7FF1BD8B828F392F14DD9D5E /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A8FF3CBB570B6B6B64ACCB25 /* OasisBrandViews.swift */,
+				A5D4D8E9FCD8A68B792E3857 /* OasisDesignSystem.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		862421B8F06178B2D6B69CCD /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				6FB23316EBFC3D3E605AE866 /* DomainModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		90C2E4BAB67077213F234BCC /* OasisMarkets */ = {
+			isa = PBXGroup;
+			children = (
+				35923C3129EEA785728007E6 /* App */,
+				862421B8F06178B2D6B69CCD /* Models */,
+				6DCC206659E844117A076B80 /* Resources */,
+				034EEFD73CF2DF08DE66900C /* Services */,
+				2B18C41FE755763B6744B95B /* ViewModels */,
+				0E826606B9299BC876A646FA /* Views */,
+			);
+			path = OasisMarkets;
+			sourceTree = "<group>";
+		};
+		F51E5D3E1505719247CCC6FC /* Admin */ = {
+			isa = PBXGroup;
+			children = (
+				01FA29105C0BD960403455A7 /* AdminDashboardView.swift */,
+				FFAF39F6A8FF3805DD6ABAB6 /* AdminInventoryView.swift */,
+				C552371D2D34F4F4F64CFC66 /* AdminLoginView.swift */,
+				5FCD4022292B1ADF92496FBD /* AdminOrdersView.swift */,
+			);
+			path = Admin;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		026CF07D15AB3A2C2D220F3C /* OasisMarkets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F2B4FD9C9B9C8CFCF4CB721C /* Build configuration list for PBXNativeTarget "OasisMarkets" */;
+			buildPhases = (
+				82AF6E38671DBBA7BD08B3BB /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OasisMarkets;
+			packageProductDependencies = (
+			);
+			productName = OasisMarkets;
+			productReference = 26814C607D7F8D5735F81E3F /* OasisMarkets.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		53BEFFE4A6FCE96C307C1B0E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					026CF07D15AB3A2C2D220F3C = {
+						DevelopmentTeam = "";
+					};
+				};
+			};
+			buildConfigurationList = F157BAAE44866FA59A3FDEAF /* Build configuration list for PBXProject "OasisMarkets" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 41B8DA004DF986222D874652;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				026CF07D15AB3A2C2D220F3C /* OasisMarkets */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		82AF6E38671DBBA7BD08B3BB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				63FB71852A3692091F90AD22 /* AdminAuthViewModel.swift in Sources */,
+				0B9149D82DE24E8115A6AAAE /* AdminDashboardView.swift in Sources */,
+				252406742BC5255D0641E666 /* AdminInventoryView.swift in Sources */,
+				5F4E9618C9D0765BE349BE6F /* AdminInventoryViewModel.swift in Sources */,
+				2ECEF23453870916F5C20FCF /* AdminLoginView.swift in Sources */,
+				874056175ED18915EEB0D49D /* AdminOrdersView.swift in Sources */,
+				D2A98548EAC1CA8E73A1CC29 /* AdminOrdersViewModel.swift in Sources */,
+				D98FAC1ABFBB48FBB0493C22 /* ApiClient.swift in Sources */,
+				7E230044BCAE9E179A1415ED /* AppState.swift in Sources */,
+				C310EE5009F59E5A7293EAB5 /* CartView.swift in Sources */,
+				0074C408179ABB4EACF186E2 /* CatalogView.swift in Sources */,
+				B33C1F427C2CF9E4C0D58D89 /* CatalogViewModel.swift in Sources */,
+				78611A1B4DC74334720155A2 /* CheckoutView.swift in Sources */,
+				728CF2AA03B8D8798F1ED66F /* CheckoutViewModel.swift in Sources */,
+				6FE70EAF4097A2A9164C8D5A /* DemoDataStore.swift in Sources */,
+				090AD7940FE7A56BE7C15619 /* DomainModels.swift in Sources */,
+				330C8C5EDD95F34B8D06692A /* ImageLoader.swift in Sources */,
+				F83A18CA8E4F3A3FF16DA747 /* OasisBrandViews.swift in Sources */,
+				BC8FAE031940F8E87BD55A76 /* OasisDesignSystem.swift in Sources */,
+				1239A246475E1C0F9B1693B8 /* OasisMarketsApp.swift in Sources */,
+				382D80D2E9D82A2FA0486FD2 /* OrderLookupView.swift in Sources */,
+				614B5622D849860F7E06E410 /* OrderLookupViewModel.swift in Sources */,
+				868DC0DE02C986604CD3C94A /* PaymentClient.swift in Sources */,
+				49FBE8D247524B6591A6081B /* ProductDetailView.swift in Sources */,
+				37FA5BC76170C8D838892FA1 /* ReceiptPrinterClient.swift in Sources */,
+				AC6CA2578D1036823BC9B7C1 /* RootView.swift in Sources */,
+				B11ED42851F8CC2D7DEC5A69 /* SessionStore.swift in Sources */,
+				BCCE0DA039B4DC044B0983A5 /* ShopperShellView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		006FB664BE6FA9CBEC9CE279 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.1;
+			};
+			name = Debug;
+		};
+		2F1D79A7A4F104E26CD513BA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.1;
+			};
+			name = Release;
+		};
+		78BFFBD20466D35940E4C733 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = OasisMarkets/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.oasismarkets.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BC96820D730044237CCCFBA3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = OasisMarkets/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.oasismarkets.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F157BAAE44866FA59A3FDEAF /* Build configuration list for PBXProject "OasisMarkets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				006FB664BE6FA9CBEC9CE279 /* Debug */,
+				2F1D79A7A4F104E26CD513BA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F2B4FD9C9B9C8CFCF4CB721C /* Build configuration list for PBXNativeTarget "OasisMarkets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC96820D730044237CCCFBA3 /* Debug */,
+				78BFFBD20466D35940E4C733 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 53BEFFE4A6FCE96C307C1B0E /* Project object */;
+}

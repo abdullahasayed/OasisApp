@@ -87,6 +87,8 @@ struct CatalogView: View {
         .task {
             await viewModel.load(apiClient: apiClient)
         }
+        .animation(.spring(response: 0.35, dampingFraction: 0.86), value: viewModel.products.count)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.selectedCategory)
     }
 }
 

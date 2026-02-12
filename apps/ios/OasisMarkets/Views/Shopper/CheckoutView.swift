@@ -112,5 +112,7 @@ struct CheckoutView: View {
             await viewModel.loadSlots(apiClient: apiClient)
         }
         .navigationBarTitleDisplayMode(.inline)
+        .animation(.easeInOut(duration: 0.22), value: viewModel.createdOrder?.orderId)
+        .animation(.easeInOut(duration: 0.22), value: viewModel.errorMessage)
     }
 }

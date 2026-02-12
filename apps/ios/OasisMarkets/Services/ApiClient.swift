@@ -5,9 +5,12 @@ final class ApiClient: ObservableObject {
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
 
-    var baseURL: URL
+    @Published private(set) var isDemoMode: Bool
 
-    init(baseURL: URL = URL(string: "http://localhost:4000")!) {
+    var baseURL: URL
+    private let demoStore = DemoDataStore()
+
+    init(baseURL: URL = URL(string: "http://localhost:4000")!, forceDemoMode: Bool? = nil) {
         self.baseURL = baseURL
 
         let decoder = JSONDecoder()
@@ -17,9 +20,31 @@ final class ApiClient: ObservableObject {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         self.encoder = encoder
+
+        if let forceDemoMode {
+            self.isDemoMode = forceDemoMode
+        } else if let envFlag = ProcessInfo.processInfo.environment["OASIS_DEMO_MODE"] {
+            self.isDemoMode = ["1", "true", "yes"].contains(envFlag.lowercased())
+        } else {
+#if DEBUG
+            self.isDemoMode = true
+#else
+            self.isDemoMode = false
+#endif
+        }
+    }
+
+    func setDemoMode(_ enabled: Bool) {
+        isDemoMode = enabled
     }
 
     func fetchCatalog(category: ProductCategory?) async throws -> [Product] {
+        if isDemoMode {
+            return try await runDemo {
+                demoStore.catalog(category: category)
+            }
+        }
+
         var components = URLComponents(
             url: baseURL.appending(path: "/v1/catalog"),
             resolvingAgainstBaseURL: false
@@ -34,6 +59,12 @@ final class ApiClient: ObservableObject {
     }
 
     func fetchPickupSlots(date: Date) async throws -> [PickupSlot] {
+        if isDemoMode {
+            return try await runDemo {
+                demoStore.pickupSlots(for: date)
+            }
+        }
+
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withFullDate]
         let dateString = formatter.string(from: date)
@@ -50,6 +81,12 @@ final class ApiClient: ObservableObject {
     }
 
     func createOrder(_ payload: CreateOrderRequest) async throws -> CreateOrderResponse {
+        if isDemoMode {
+            return try await runDemo {
+                try demoStore.createOrder(payload: payload)
+            }
+        }
+
         var request = URLRequest(url: baseURL.appending(path: "/v1/orders"))
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -58,6 +95,12 @@ final class ApiClient: ObservableObject {
     }
 
     func lookupOrder(orderNumber: String, phone: String) async throws -> LookupOrderResponse {
+        if isDemoMode {
+            return try await runDemo {
+                try demoStore.lookup(orderNumber: orderNumber, phone: phone)
+            }
+        }
+
         var components = URLComponents(
             url: baseURL.appending(path: "/v1/orders/lookup"),
             resolvingAgainstBaseURL: false
@@ -71,6 +114,12 @@ final class ApiClient: ObservableObject {
     }
 
     func adminLogin(email: String, password: String) async throws -> AdminLoginResponse {
+        if isDemoMode {
+            return try await runDemo {
+                try demoStore.adminLogin(email: email, password: password)
+            }
+        }
+
         var request = URLRequest(url: baseURL.appending(path: "/v1/admin/auth/login"))
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -79,6 +128,13 @@ final class ApiClient: ObservableObject {
     }
 
     func fetchAdminProducts(accessToken: String) async throws -> [Product] {
+        if isDemoMode {
+            return try await runDemo {
+                _ = accessToken
+                return demoStore.adminProducts()
+            }
+        }
+
         var request = URLRequest(url: baseURL.appending(path: "/v1/admin/products"))
         request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         let response: AdminProductsResponse = try await send(request)
@@ -90,6 +146,13 @@ final class ApiClient: ObservableObject {
         productId: UUID,
         stockQuantity: Double
     ) async throws -> Product {
+        if isDemoMode {
+            return try await runDemo {
+                _ = accessToken
+                return try demoStore.updateStock(productId: productId, stockQuantity: stockQuantity)
+            }
+        }
+
         struct Payload: Codable {
             let stockQuantity: Double
         }
@@ -105,6 +168,13 @@ final class ApiClient: ObservableObject {
     }
 
     func fetchAdminOrders(accessToken: String, status: OrderStatus?) async throws -> [AdminOrder] {
+        if isDemoMode {
+            return try await runDemo {
+                _ = accessToken
+                return demoStore.adminOrders(status: status)
+            }
+        }
+
         var components = URLComponents(
             url: baseURL.appending(path: "/v1/admin/orders"),
             resolvingAgainstBaseURL: false
@@ -120,6 +190,14 @@ final class ApiClient: ObservableObject {
     }
 
     func updateOrderStatus(accessToken: String, orderId: UUID, status: OrderStatus) async throws {
+        if isDemoMode {
+            _ = try await runDemo {
+                _ = accessToken
+                return try demoStore.updateOrderStatus(orderId: orderId, status: status)
+            }
+            return
+        }
+
         struct Payload: Codable {
             let status: String
         }
@@ -134,6 +212,13 @@ final class ApiClient: ObservableObject {
     }
 
     func fulfillOrder(accessToken: String, orderId: UUID) async throws -> FulfillOrderResponse {
+        if isDemoMode {
+            return try await runDemo {
+                _ = accessToken
+                return try demoStore.fulfill(orderId: orderId)
+            }
+        }
+
         var request = URLRequest(url: baseURL.appending(path: "/v1/admin/orders/\(orderId.uuidString)/fulfill"))
         request.httpMethod = "POST"
         request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -147,6 +232,15 @@ final class ApiClient: ObservableObject {
         amountCents: Int,
         reason: String
     ) async throws {
+        if isDemoMode {
+            _ = try await runDemo {
+                _ = accessToken
+                try demoStore.refund(orderId: orderId, amountCents: amountCents, reason: reason)
+                return EmptyResponse()
+            }
+            return
+        }
+
         struct Payload: Codable {
             let amountCents: Int
             let reason: String
@@ -161,6 +255,15 @@ final class ApiClient: ObservableObject {
         request.httpBody = try encoder.encode(Payload(amountCents: amountCents, reason: reason))
 
         let _: EmptyResponse = try await send(request)
+    }
+
+    private func runDemo<T>(_ work: () throws -> T) async throws -> T {
+        try await Task.sleep(for: .milliseconds(120))
+        do {
+            return try work()
+        } catch let error as DemoStoreError {
+            throw ApiError.serverError(code: error.statusCode, message: error.localizedDescription)
+        }
     }
 
     private func send<Response: Decodable>(_ request: URLRequest) async throws -> Response {

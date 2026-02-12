@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var apiClient: ApiClient
 
     var body: some View {
         NavigationStack {
@@ -14,13 +15,20 @@ struct RootView: View {
                         OasisWordmarkView()
                         Spacer()
 
-                        if appState.appMode == .shopper {
+                        VStack(alignment: .trailing, spacing: 6) {
+                            if appState.appMode == .shopper {
+                                OasisStatusBadge(
+                                    title: "Cart \(appState.cartItems.count)",
+                                    tint: .oasisRoyalBlue
+                                )
+                            } else {
+                                OasisStatusBadge(title: "Admin", tint: .oasisJungleGreen)
+                            }
+
                             OasisStatusBadge(
-                                title: "Cart \(appState.cartItems.count)",
-                                tint: .oasisRoyalBlue
+                                title: apiClient.isDemoMode ? "Demo Data" : "Live API",
+                                tint: apiClient.isDemoMode ? .oasisJungleGreen : .oasisRoyalBlue
                             )
-                        } else {
-                            OasisStatusBadge(title: "Admin", tint: .oasisJungleGreen)
                         }
                     }
                     .padding(.horizontal, 4)
@@ -43,6 +51,17 @@ struct RootView: View {
                     }
                     .transition(.opacity.combined(with: .scale(scale: 0.98)))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    Toggle(isOn: Binding(
+                        get: { apiClient.isDemoMode },
+                        set: { apiClient.setDemoMode($0) }
+                    )) {
+                        Text("Use Demo Data (No Backend Required)")
+                            .font(.system(size: 13, weight: .semibold, design: .default))
+                            .foregroundStyle(Color.oasisInk)
+                    }
+                    .tint(.oasisJungleGreen)
+                    .padding(.horizontal, 2)
                 }
                 .padding(16)
             }
@@ -56,5 +75,7 @@ struct RootView: View {
             }
         }
         .tint(.oasisRoyalBlue)
+        .animation(.easeInOut(duration: 0.22), value: appState.appMode)
+        .animation(.easeInOut(duration: 0.22), value: apiClient.isDemoMode)
     }
 }

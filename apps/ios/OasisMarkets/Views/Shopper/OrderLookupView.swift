@@ -74,5 +74,7 @@ struct OrderLookupView: View {
             .padding(.bottom, 20)
         }
         .scrollIndicators(.hidden)
+        .animation(.easeInOut(duration: 0.22), value: viewModel.result?.id)
+        .animation(.easeInOut(duration: 0.22), value: viewModel.errorMessage)
     }
 }

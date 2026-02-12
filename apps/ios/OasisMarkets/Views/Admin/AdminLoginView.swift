@@ -35,6 +35,13 @@ struct AdminLoginView: View {
                     }
                 }
                 .buttonStyle(OasisPrimaryButtonStyle())
+
+                if apiClient.isDemoMode {
+                    Text("Demo login: admin@oasis.local / OasisAdmin123!")
+                        .font(.system(size: 12, weight: .medium, design: .default))
+                        .foregroundStyle(Color.oasisMutedInk)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
 
             if let error = viewModel.errorMessage {

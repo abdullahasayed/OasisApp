@@ -10,3 +10,6 @@ services/api/.tmp
 services/api/uploads
 services/api/test-artifacts
 infra/.data
+apps/ios/.derivedData
+apps/ios/xcodebuild.log
+*.xcuserstate

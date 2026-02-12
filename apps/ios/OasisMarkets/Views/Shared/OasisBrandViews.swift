@@ -78,7 +78,7 @@ struct OasisModeToggle: View {
                                 endPoint: .trailing
                             )
                     )
-            }
+            )
         }
         .buttonStyle(.plain)
     }

@@ -58,6 +58,8 @@ struct AdminInventoryView: View {
         .task {
             await viewModel.load(apiClient: apiClient, token: appState.adminAccessToken)
         }
+        .animation(.easeInOut(duration: 0.22), value: viewModel.products.count)
+        .animation(.easeInOut(duration: 0.22), value: viewModel.errorMessage)
     }
 }
 

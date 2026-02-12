@@ -78,5 +78,6 @@ struct CartView: View {
                 }
             }
         }
+        .animation(.easeInOut(duration: 0.22), value: appState.cartItems.count)
     }
 }
