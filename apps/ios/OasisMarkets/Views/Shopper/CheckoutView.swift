@@ -6,28 +6,57 @@ struct CheckoutView: View {
     @StateObject private var viewModel = CheckoutViewModel()
 
     var body: some View {
-        Form {
-            Section("Customer") {
-                TextField("Full Name", text: $viewModel.customerName)
-                TextField("Phone", text: $viewModel.customerPhone)
-                    .keyboardType(.phonePad)
-            }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("Checkout")
+                    .font(.system(size: 26, weight: .black, design: .default))
+                    .foregroundStyle(Color.oasisInk)
 
-            Section("Pickup Slot") {
-                if viewModel.availableSlots.isEmpty {
-                    Text("No available slots")
-                        .foregroundStyle(.secondary)
-                } else {
-                    Picker("Select Slot", selection: $viewModel.selectedSlot) {
-                        ForEach(viewModel.availableSlots) { slot in
-                            Text("\(slot.startIso) (\(slot.available) available)")
-                                .tag(PickupSlot?.some(slot))
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Customer Details")
+                        .font(.system(size: 16, weight: .semibold, design: .default))
+
+                    TextField("Full Name", text: $viewModel.customerName)
+                        .textInputAutocapitalization(.words)
+                        .oasisInputField()
+
+                    TextField("Phone", text: $viewModel.customerPhone)
+                        .keyboardType(.phonePad)
+                        .oasisInputField()
+                }
+                .oasisCard()
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Pickup Slot")
+                        .font(.system(size: 16, weight: .semibold, design: .default))
+
+                    if viewModel.availableSlots.isEmpty {
+                        Text("No available slots")
+                            .font(.system(size: 14, weight: .medium, design: .default))
+                            .foregroundStyle(Color.oasisMutedInk)
+                    } else {
+                        Menu {
+                            ForEach(viewModel.availableSlots) { slot in
+                                Button(slot.displayLabel) {
+                                    viewModel.selectedSlot = slot
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Text(viewModel.selectedSlot?.displayLabel ?? "Select pickup window")
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.leading)
+                                Spacer()
+                                Image(systemName: "chevron.down")
+                            }
+                            .font(.system(size: 14, weight: .medium, design: .default))
+                            .foregroundStyle(Color.oasisInk)
+                            .oasisInputField()
                         }
                     }
                 }
-            }
+                .oasisCard()
 
-            Section {
                 Button {
                     Task {
                         await viewModel.submitOrder(apiClient: apiClient, cartItems: appState.cartItems)
@@ -38,34 +67,50 @@ struct CheckoutView: View {
                 } label: {
                     if viewModel.isSubmitting {
                         ProgressView()
+                            .tint(.white)
+                            .frame(maxWidth: .infinity)
                     } else {
                         Text("Place Pickup Order")
                     }
                 }
+                .buttonStyle(OasisPrimaryButtonStyle())
                 .disabled(viewModel.isSubmitting || appState.cartItems.isEmpty)
-            }
 
-            if let error = viewModel.errorMessage {
-                Section {
+                if let error = viewModel.errorMessage {
                     Text(error)
-                        .foregroundStyle(.red)
+                        .font(.system(size: 14, weight: .semibold, design: .default))
+                        .foregroundStyle(Color.oasisRed)
+                        .oasisCard()
                 }
-            }
 
-            if let order = viewModel.createdOrder {
-                Section("Order Confirmed") {
-                    Text(order.orderNumber)
-                        .font(.largeTitle.bold())
-                    Text(viewModel.customerName.uppercased())
-                        .font(.title2)
-                    Text("Estimated total: \(order.estimatedTotalCents.usd)")
-                        .foregroundStyle(.secondary)
+                if let order = viewModel.createdOrder {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Order Confirmed")
+                            .font(.system(size: 16, weight: .semibold, design: .default))
+                            .foregroundStyle(Color.oasisJungleGreen)
+
+                        Text(order.orderNumber)
+                            .font(.system(size: 32, weight: .black, design: .default))
+                            .foregroundStyle(Color.oasisInk)
+
+                        Text(viewModel.customerName.uppercased())
+                            .font(.system(size: 20, weight: .bold, design: .default))
+
+                        Text("Estimated total: \(order.estimatedTotalCents.usd)")
+                            .font(.system(size: 15, weight: .medium, design: .default))
+                            .foregroundStyle(Color.oasisMutedInk)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .oasisCard()
                 }
             }
+            .padding(.horizontal, 4)
+            .padding(.bottom, 24)
         }
-        .navigationTitle("Checkout")
+        .scrollIndicators(.hidden)
         .task {
             await viewModel.loadSlots(apiClient: apiClient)
         }
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

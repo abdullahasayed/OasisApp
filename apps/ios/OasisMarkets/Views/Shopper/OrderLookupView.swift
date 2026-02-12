@@ -5,38 +5,74 @@ struct OrderLookupView: View {
     @StateObject private var viewModel = OrderLookupViewModel()
 
     var body: some View {
-        Form {
-            Section("Lookup") {
-                TextField("Order Number", text: $viewModel.orderNumber)
-                TextField("Phone", text: $viewModel.phone)
-                    .keyboardType(.phonePad)
-                Button("Find Order") {
-                    Task { await viewModel.lookup(apiClient: apiClient) }
-                }
-            }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("Track Your Pickup")
+                    .font(.system(size: 22, weight: .bold, design: .default))
+                    .foregroundStyle(Color.oasisInk)
 
-            if let result = viewModel.result {
-                Section("Order") {
-                    Text(result.orderNumber)
-                        .font(.title2.bold())
-                    Text(result.customerName.uppercased())
-                    Text("Status: \(result.status.displayName)")
-                    Text("Estimated total: \(result.estimatedTotalCents.usd)")
-                    if let finalTotal = result.finalTotalCents {
-                        Text("Final total: \(finalTotal.usd)")
-                    }
-                    if let receipt = result.receiptUrl {
-                        Link("Open Receipt", destination: receipt)
-                    }
-                }
-            }
+                VStack(alignment: .leading, spacing: 10) {
+                    TextField("Order Number", text: $viewModel.orderNumber)
+                        .textInputAutocapitalization(.characters)
+                        .oasisInputField()
 
-            if let error = viewModel.errorMessage {
-                Section {
+                    TextField("Phone", text: $viewModel.phone)
+                        .keyboardType(.phonePad)
+                        .oasisInputField()
+
+                    Button {
+                        Task { await viewModel.lookup(apiClient: apiClient) }
+                    } label: {
+                        Text("Find Order")
+                    }
+                    .buttonStyle(OasisPrimaryButtonStyle())
+                }
+                .oasisCard()
+
+                if let result = viewModel.result {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text(result.orderNumber)
+                                .font(.system(size: 26, weight: .black, design: .default))
+                                .foregroundStyle(Color.oasisInk)
+                            Spacer()
+                            OasisStatusBadge(title: result.status.displayName, tint: result.status.statusTint)
+                        }
+
+                        Text(result.customerName.uppercased())
+                            .font(.system(size: 18, weight: .bold, design: .default))
+
+                        Text(result.pickupWindowLabel)
+                            .font(.system(size: 14, weight: .medium, design: .default))
+                            .foregroundStyle(Color.oasisMutedInk)
+
+                        Divider()
+
+                        Text("Estimated total: \(result.estimatedTotalCents.usd)")
+                            .font(.system(size: 14, weight: .semibold, design: .default))
+                        if let finalTotal = result.finalTotalCents {
+                            Text("Final total: \(finalTotal.usd)")
+                                .font(.system(size: 14, weight: .semibold, design: .default))
+                        }
+
+                        if let receipt = result.receiptUrl {
+                            Link("Open Receipt", destination: receipt)
+                                .font(.system(size: 14, weight: .semibold, design: .default))
+                        }
+                    }
+                    .oasisCard()
+                }
+
+                if let error = viewModel.errorMessage {
                     Text(error)
-                        .foregroundStyle(.red)
+                        .font(.system(size: 14, weight: .semibold, design: .default))
+                        .foregroundStyle(Color.oasisRed)
+                        .oasisCard()
                 }
             }
+            .padding(.horizontal, 4)
+            .padding(.bottom, 20)
         }
+        .scrollIndicators(.hidden)
     }
 }

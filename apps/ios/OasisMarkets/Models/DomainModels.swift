@@ -25,6 +25,15 @@ enum ProductCategory: String, Codable, CaseIterable, Identifiable {
 enum ProductUnit: String, Codable {
     case each
     case lb
+
+    var displayName: String {
+        switch self {
+        case .each:
+            return "each"
+        case .lb:
+            return "lb"
+        }
+    }
 }
 
 enum OrderStatus: String, Codable, CaseIterable {
@@ -81,6 +90,10 @@ struct PickupSlot: Codable, Identifiable {
     let endIso: String
     let capacity: Int
     let available: Int
+
+    var displayLabel: String {
+        OasisDateText.pickupWindow(startISO: startIso, endISO: endIso)
+    }
 }
 
 struct PickupSlotsResponse: Codable {
@@ -124,12 +137,20 @@ struct LookupOrderResponse: Codable {
     let finalTaxCents: Int?
     let finalTotalCents: Int?
     let receiptUrl: URL?
+
+    var pickupWindowLabel: String {
+        OasisDateText.pickupWindow(startISO: pickupSlotStartIso, endISO: pickupSlotEndIso)
+    }
 }
 
 struct CartItem: Identifiable {
     var id: UUID { product.id }
     let product: Product
     var quantity: Double
+
+    var lineTotalCents: Int {
+        Int((Double(product.priceCents) * quantity).rounded())
+    }
 }
 
 struct AdminLoginRequest: Codable {
@@ -162,6 +183,10 @@ struct AdminOrder: Codable, Identifiable {
     let finalSubtotalCents: Int?
     let finalTaxCents: Int?
     let finalTotalCents: Int?
+
+    var pickupWindowLabel: String {
+        OasisDateText.pickupWindow(startISO: pickupSlotStartIso, endISO: pickupSlotEndIso)
+    }
 }
 
 struct AdminProductsResponse: Codable {

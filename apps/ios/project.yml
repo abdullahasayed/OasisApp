@@ -21,7 +21,7 @@ targets:
     info:
       path: OasisMarkets/Resources/Info.plist
       properties:
-        CFBundleDisplayName: Oasis Markets
+        CFBundleDisplayName: Oasis International Market
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait

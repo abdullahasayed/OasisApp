@@ -10,6 +10,7 @@ struct OasisMarketsApp: App {
             RootView()
                 .environmentObject(appState)
                 .environmentObject(apiClient)
+                .tint(.oasisRoyalBlue)
         }
     }
 }

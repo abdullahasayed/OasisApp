@@ -7,7 +7,7 @@ struct ShopperShellView: View {
         TabView {
             CatalogView()
                 .tabItem {
-                    Label("Items", systemImage: "cart")
+                    Label("Items", systemImage: "basket.fill")
                 }
 
             CartView()
@@ -21,5 +21,7 @@ struct ShopperShellView: View {
                     Label("Track", systemImage: "clock.arrow.circlepath")
                 }
         }
+        .toolbarBackground(Color.white.opacity(0.92), for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
     }
 }

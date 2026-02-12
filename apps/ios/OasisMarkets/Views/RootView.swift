@@ -2,34 +2,59 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var apiClient: ApiClient
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
-                Picker("Mode", selection: Binding(
-                    get: { appState.appMode == .shopper ? 0 : 1 },
-                    set: { appState.appMode = $0 == 0 ? .shopper : .admin }
-                )) {
-                    Text("Shopper").tag(0)
-                    Text("Admin").tag(1)
-                }
-                .pickerStyle(.segmented)
+            ZStack {
+                OasisBackgroundView()
+                    .ignoresSafeArea()
 
-                if appState.appMode == .shopper {
-                    ShopperShellView()
-                        .environmentObject(apiClient)
-                        .environmentObject(appState)
-                } else {
-                    if appState.adminAccessToken == nil {
-                        AdminLoginView()
-                    } else {
-                        AdminDashboardView()
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack(alignment: .top) {
+                        OasisWordmarkView()
+                        Spacer()
+
+                        if appState.appMode == .shopper {
+                            OasisStatusBadge(
+                                title: "Cart \(appState.cartItems.count)",
+                                tint: .oasisRoyalBlue
+                            )
+                        } else {
+                            OasisStatusBadge(title: "Admin", tint: .oasisJungleGreen)
+                        }
                     }
+                    .padding(.horizontal, 4)
+
+                    OasisModeToggle(
+                        isShopperMode: appState.appMode == .shopper,
+                        onSelect: { mode in
+                            appState.appMode = mode
+                        }
+                    )
+
+                    Group {
+                        if appState.appMode == .shopper {
+                            ShopperShellView()
+                        } else if appState.adminAccessToken == nil {
+                            AdminLoginView()
+                        } else {
+                            AdminDashboardView()
+                        }
+                    }
+                    .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .padding(16)
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Oasis International Market")
+                        .font(.system(size: 17, weight: .semibold, design: .default))
+                        .foregroundStyle(Color.oasisInk)
                 }
             }
-            .padding()
-            .navigationTitle("Oasis Markets")
         }
+        .tint(.oasisRoyalBlue)
     }
 }

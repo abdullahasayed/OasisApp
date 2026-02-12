@@ -6,30 +6,111 @@ struct ProductDetailView: View {
     let product: Product
     @State private var quantity: Double = 1
 
+    private var stepSize: Double {
+        product.unit == .lb ? 0.25 : 1
+    }
+
+    private var lineTotalCents: Int {
+        Int((Double(product.priceCents) * quantity).rounded())
+    }
+
     var body: some View {
-        Form {
-            Section {
-                Text(product.name)
-                    .font(.title2.bold())
-                Text(product.description)
-                    .font(.body)
-                Text(product.priceLabel)
-                    .font(.headline)
-            }
-
-            Section(product.unit == .lb ? "Estimated Weight (lb)" : "Quantity") {
-                Stepper(value: $quantity, in: 1...100, step: product.unit == .lb ? 0.25 : 1) {
-                    Text("\(quantity, specifier: product.unit == .lb ? "%.2f" : "%.0f")")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                AsyncImage(url: product.imageUrl) { phase in
+                    switch phase {
+                    case let .success(image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    default:
+                        ZStack {
+                            LinearGradient(
+                                colors: [
+                                    product.category.categoryTint.opacity(0.6),
+                                    product.category.categoryTint.opacity(0.24)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                            Image(systemName: product.category.symbolName)
+                                .font(.system(size: 48))
+                                .foregroundStyle(.white)
+                        }
+                    }
                 }
-            }
+                .frame(height: 260)
+                .frame(maxWidth: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
 
-            Section {
-                Button("Add to Cart") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(product.name)
+                        .font(.system(size: 28, weight: .black, design: .default))
+                        .foregroundStyle(Color.oasisInk)
+                    Text(product.description)
+                        .font(.system(size: 15, weight: .regular, design: .default))
+                        .foregroundStyle(Color.oasisMutedInk)
+                    HStack {
+                        OasisStatusBadge(title: product.category.displayName, tint: product.category.categoryTint)
+                        Spacer()
+                        Text(product.priceLabel)
+                            .font(.system(size: 18, weight: .bold, design: .default))
+                            .foregroundStyle(product.category.categoryTint)
+                    }
+                }
+                .oasisCard()
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(product.unit == .lb ? "Estimated Weight" : "Quantity")
+                        .font(.system(size: 16, weight: .semibold, design: .default))
+                        .foregroundStyle(Color.oasisInk)
+
+                    HStack {
+                        Button {
+                            quantity = max(stepSize, quantity - stepSize)
+                        } label: {
+                            Image(systemName: "minus")
+                                .font(.system(size: 13, weight: .bold))
+                                .frame(width: 34, height: 34)
+                        }
+                        .buttonStyle(OasisSecondaryButtonStyle())
+
+                        Spacer()
+
+                        Text("\(quantity, specifier: product.unit == .lb ? "%.2f" : "%.0f") \(product.unit.displayName)")
+                            .font(.system(size: 18, weight: .bold, design: .default))
+                            .foregroundStyle(Color.oasisInk)
+
+                        Spacer()
+
+                        Button {
+                            quantity += stepSize
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 13, weight: .bold))
+                                .frame(width: 34, height: 34)
+                        }
+                        .buttonStyle(OasisSecondaryButtonStyle())
+                    }
+
+                    Text("Estimated line total: \(lineTotalCents.usd)")
+                        .font(.system(size: 14, weight: .semibold, design: .default))
+                        .foregroundStyle(Color.oasisJungleGreen)
+                }
+                .oasisCard()
+
+                Button {
                     appState.addToCart(product: product, quantity: quantity)
+                } label: {
+                    Text("Add to Cart")
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(OasisPrimaryButtonStyle())
             }
+            .padding(.horizontal, 4)
+            .padding(.bottom, 24)
         }
-        .navigationTitle("Product")
+        .scrollIndicators(.hidden)
+        .navigationTitle(product.name)
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

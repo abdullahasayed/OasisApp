@@ -7,14 +7,16 @@ struct AdminDashboardView: View {
         TabView {
             AdminInventoryView()
                 .tabItem {
-                    Label("Inventory", systemImage: "shippingbox")
+                    Label("Inventory", systemImage: "shippingbox.fill")
                 }
 
             AdminOrdersView()
                 .tabItem {
-                    Label("Orders", systemImage: "list.bullet.rectangle")
+                    Label("Orders", systemImage: "list.bullet.rectangle.portrait.fill")
                 }
         }
+        .toolbarBackground(Color.white.opacity(0.92), for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Sign Out") {
@@ -22,6 +24,8 @@ struct AdminDashboardView: View {
                     appState.adminRefreshToken = nil
                     appState.appMode = .shopper
                 }
+                .font(.system(size: 14, weight: .semibold, design: .default))
+                .foregroundStyle(Color.oasisRed)
             }
         }
     }

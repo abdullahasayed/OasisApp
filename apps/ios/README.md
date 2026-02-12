@@ -1,4 +1,4 @@
-# Oasis Markets iOS App
+# Oasis International Market iOS App
 
 SwiftUI app scaffold for shopper and admin workflows.
 
