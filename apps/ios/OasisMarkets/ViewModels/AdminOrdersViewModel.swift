@@ -45,6 +45,29 @@ final class AdminOrdersViewModel: ObservableObject {
         }
     }
 
+    func delay(
+        order: AdminOrder,
+        by minutes: Int,
+        apiClient: ApiClient,
+        token: String?
+    ) async {
+        guard let token else {
+            errorMessage = "Missing admin token"
+            return
+        }
+
+        do {
+            try await apiClient.delayOrder(
+                accessToken: token,
+                orderId: order.id,
+                delayMinutes: minutes
+            )
+            await load(apiClient: apiClient, token: token)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     func fulfill(order: AdminOrder, apiClient: ApiClient, token: String?) async {
         guard let token else {
             errorMessage = "Missing admin token"

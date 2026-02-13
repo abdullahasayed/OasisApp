@@ -2,31 +2,58 @@ import { DateTime } from "luxon";
 import type { PickupSlot } from "@oasis/contracts";
 import type { StoreConfig } from "../db/repositories.js";
 
-const splitTime = (hhmm: string): { hour: number; minute: number } => {
-  const [hour, minute] = hhmm.split(":").map((v) => Number(v));
-  return { hour, minute };
+export interface PickupSlotBuildConfig {
+  timezone: string;
+  slotCapacity: number;
+  leadTimeMinutes: number;
+  openHour: number;
+  closeHour: number;
+  unavailableSlotStarts?: Set<string>;
+}
+
+export const SLOT_INTERVAL_MINUTES = 60;
+
+const clampHour = (value: number): number => {
+  return Math.max(0, Math.min(24, Math.trunc(value)));
+};
+
+export const getHourlyRangeFromStoreConfig = (
+  config: StoreConfig
+): { openHour: number; closeHour: number } => {
+  const [openHour] = config.openTime.split(":").map((v) => Number(v));
+  const [closeHourRaw] = config.closeTime.split(":").map((v) => Number(v));
+
+  const openHourSafe = clampHour(Number.isFinite(openHour) ? openHour : 9);
+  let closeHourSafe = clampHour(Number.isFinite(closeHourRaw) ? closeHourRaw : 20);
+
+  if (closeHourSafe <= openHourSafe) {
+    closeHourSafe = Math.min(24, openHourSafe + 1);
+  }
+
+  return {
+    openHour: openHourSafe,
+    closeHour: closeHourSafe
+  };
 };
 
 export const buildPickupSlotsForDate = (
   date: string,
-  config: StoreConfig,
+  config: PickupSlotBuildConfig,
   bookings: Map<string, number>,
   nowOverride?: DateTime
 ): PickupSlot[] => {
   const zone = config.timezone;
-  const { hour: openHour, minute: openMinute } = splitTime(config.openTime);
-  const { hour: closeHour, minute: closeMinute } = splitTime(config.closeTime);
 
   const day = DateTime.fromISO(date, { zone });
   const start = day.set({
-    hour: openHour,
-    minute: openMinute,
+    hour: config.openHour,
+    minute: 0,
     second: 0,
     millisecond: 0
   });
   const close = day.set({
-    hour: closeHour,
-    minute: closeMinute,
+    hour: config.closeHour,
+    minute: 0,
     second: 0,
     millisecond: 0
   });
@@ -38,10 +65,12 @@ export const buildPickupSlotsForDate = (
   const now = (nowOverride ?? DateTime.now()).setZone(zone);
   const leadCutoff = now.plus({ minutes: config.leadTimeMinutes });
 
+  const blockedStarts = config.unavailableSlotStarts ?? new Set<string>();
+
   const slots: PickupSlot[] = [];
   let cursor = start;
   while (cursor < close) {
-    const next = cursor.plus({ minutes: config.slotMinutes });
+    const next = cursor.plus({ minutes: SLOT_INTERVAL_MINUTES });
     const slotStartIso = cursor.toUTC().toISO();
     const slotEndIso = next.toUTC().toISO();
 
@@ -51,7 +80,10 @@ export const buildPickupSlotsForDate = (
     }
 
     const booked = bookings.get(slotStartIso) ?? 0;
-    const available = Math.max(0, config.slotCapacity - booked);
+    const isUnavailable = blockedStarts.has(slotStartIso);
+    const available = isUnavailable
+      ? 0
+      : Math.max(0, config.slotCapacity - booked);
 
     if (cursor >= leadCutoff) {
       slots.push({

@@ -94,6 +94,14 @@ struct PickupSlot: Codable, Identifiable {
     var displayLabel: String {
         OasisDateText.pickupWindow(startISO: startIso, endISO: endIso)
     }
+
+    var hourRangeLabel: String {
+        OasisDateText.hourRange(startISO: startIso, endISO: endIso)
+    }
+
+    var dayKey: String {
+        OasisDateText.dayKey(startISO: startIso)
+    }
 }
 
 struct PickupSlotsResponse: Codable {
@@ -128,6 +136,9 @@ struct LookupOrderResponse: Codable {
     let customerPhone: String
     let pickupSlotStartIso: String
     let pickupSlotEndIso: String
+    let estimatedPickupStartIso: String
+    let estimatedPickupEndIso: String
+    let totalDelayMinutes: Int
     let status: OrderStatus
     let paymentStatus: PaymentStatus
     let estimatedSubtotalCents: Int
@@ -140,6 +151,10 @@ struct LookupOrderResponse: Codable {
 
     var pickupWindowLabel: String {
         OasisDateText.pickupWindow(startISO: pickupSlotStartIso, endISO: pickupSlotEndIso)
+    }
+
+    var estimatedPickupWindowLabel: String {
+        OasisDateText.pickupWindow(startISO: estimatedPickupStartIso, endISO: estimatedPickupEndIso)
     }
 }
 
@@ -175,6 +190,9 @@ struct AdminOrder: Codable, Identifiable {
     let customerPhone: String
     let pickupSlotStartIso: String
     let pickupSlotEndIso: String
+    let estimatedPickupStartIso: String
+    let estimatedPickupEndIso: String
+    let totalDelayMinutes: Int
     let status: OrderStatus
     let paymentStatus: PaymentStatus
     let estimatedSubtotalCents: Int
@@ -187,10 +205,57 @@ struct AdminOrder: Codable, Identifiable {
     var pickupWindowLabel: String {
         OasisDateText.pickupWindow(startISO: pickupSlotStartIso, endISO: pickupSlotEndIso)
     }
+
+    var estimatedPickupWindowLabel: String {
+        OasisDateText.pickupWindow(startISO: estimatedPickupStartIso, endISO: estimatedPickupEndIso)
+    }
 }
 
 struct AdminProductsResponse: Codable {
     let products: [Product]
+}
+
+struct DelayOrderRequest: Codable {
+    let delayMinutes: Int
+}
+
+struct AdminPickupAvailabilityResponse: Codable {
+    let days: [AdminPickupDay]
+}
+
+struct AdminPickupDay: Codable, Identifiable {
+    var id: String { date }
+    let date: String
+    let openHour: Int
+    let closeHour: Int
+    let slots: [AdminPickupSlot]
+
+    var title: String {
+        OasisDateText.dayHeader(for: date)
+    }
+}
+
+struct AdminPickupSlot: Codable, Identifiable {
+    var id: String { startIso }
+    let startIso: String
+    let endIso: String
+    let capacity: Int
+    let booked: Int
+    let available: Int
+    let isUnavailable: Bool
+
+    var hourRangeLabel: String {
+        OasisDateText.hourRange(startISO: startIso, endISO: endIso)
+    }
+}
+
+struct UpdatePickupDayRangeRequest: Codable {
+    let openHour: Int
+    let closeHour: Int
+}
+
+struct TogglePickupSlotUnavailableRequest: Codable {
+    let unavailable: Bool
 }
 
 extension Int {

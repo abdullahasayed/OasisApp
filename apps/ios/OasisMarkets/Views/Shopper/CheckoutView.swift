@@ -45,23 +45,55 @@ struct CheckoutView: View {
                             .font(.system(size: 14, weight: .medium, design: .default))
                             .foregroundStyle(Color.oasisMutedInk)
                     } else {
-                        Menu {
-                            ForEach(viewModel.availableSlots) { slot in
-                                Button(slot.displayLabel) {
-                                    viewModel.selectedSlot = slot
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text(viewModel.selectedSlot?.displayLabel ?? "Select pickup window")
+                                .font(.system(size: 13, weight: .semibold, design: .default))
+                                .foregroundStyle(Color.oasisRoyalBlue)
+
+                            ForEach(groupedSlots, id: \.dayKey) { dayGroup in
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text(dayGroup.dayTitle)
+                                        .font(.system(size: 13, weight: .bold, design: .default))
+                                        .foregroundStyle(Color.oasisMutedInk)
+
+                                    ForEach(dayGroup.slots) { slot in
+                                        Button {
+                                            viewModel.selectedSlot = slot
+                                        } label: {
+                                            HStack {
+                                                Text(slot.hourRangeLabel)
+                                                    .font(.system(size: 14, weight: .semibold, design: .default))
+                                                Spacer()
+                                                if viewModel.selectedSlot?.id == slot.id {
+                                                    Image(systemName: "checkmark.circle.fill")
+                                                        .foregroundStyle(Color.oasisJungleGreen)
+                                                }
+                                            }
+                                            .foregroundStyle(Color.oasisInk)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 10)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                    .fill(
+                                                        viewModel.selectedSlot?.id == slot.id
+                                                            ? Color.oasisJungleGreen.opacity(0.14)
+                                                            : Color.white.opacity(0.86)
+                                                    )
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                            .stroke(
+                                                                viewModel.selectedSlot?.id == slot.id
+                                                                    ? Color.oasisJungleGreen.opacity(0.35)
+                                                                    : Color.oasisRoyalBlue.opacity(0.22),
+                                                                lineWidth: 1
+                                                            )
+                                                    )
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
                                 }
                             }
-                        } label: {
-                            HStack {
-                                Text(viewModel.selectedSlot?.displayLabel ?? "Select pickup window")
-                                    .lineLimit(2)
-                                    .multilineTextAlignment(.leading)
-                                Spacer()
-                                Image(systemName: "chevron.down")
-                            }
-                            .font(.system(size: 14, weight: .medium, design: .default))
-                            .foregroundStyle(Color.oasisInk)
-                            .oasisInputField()
                         }
                     }
                 }
@@ -123,5 +155,16 @@ struct CheckoutView: View {
         .navigationBarTitleDisplayMode(.inline)
         .animation(.easeInOut(duration: 0.22), value: viewModel.createdOrder?.orderId)
         .animation(.easeInOut(duration: 0.22), value: viewModel.errorMessage)
+    }
+
+    private var groupedSlots: [(dayKey: String, dayTitle: String, slots: [PickupSlot])] {
+        let grouped = Dictionary(grouping: viewModel.availableSlots) { $0.dayKey }
+        return grouped.keys.sorted().map { key in
+            (
+                dayKey: key,
+                dayTitle: OasisDateText.dayHeader(for: key),
+                slots: grouped[key] ?? []
+            )
+        }
     }
 }

@@ -2,11 +2,30 @@ import Foundation
 
 @MainActor
 final class DemoDataStore {
+    private struct PickupRange {
+        var openHour: Int
+        var closeHour: Int
+    }
+
+    private struct SlotSnapshot {
+        let startIso: String
+        let endIso: String
+        let booked: Int
+        let capacity: Int
+        let available: Int
+        let isUnavailable: Bool
+    }
+
     private(set) var products: [Product]
     private var orders: [DemoOrderRecord]
     private var orderSequence: Int
+    private var dayRanges: [String: PickupRange]
+    private var unavailableSlots: Set<String>
 
     private let taxRateBps = 825
+    private let slotCapacity = 20
+    private let slotDurationHours = 1
+    private let leadTimeSeconds: TimeInterval = 60 * 60
 
     init(now: Date = Date()) {
         let calendar = Calendar(identifier: .gregorian)
@@ -89,7 +108,7 @@ final class DemoDataStore {
         self.orderSequence = 42
 
         let seededOrderStart = calendar.date(byAdding: .hour, value: 2, to: now) ?? now
-        let seededOrderEnd = calendar.date(byAdding: .minute, value: 30, to: seededOrderStart) ?? seededOrderStart
+        let seededOrderEnd = calendar.date(byAdding: .hour, value: 1, to: seededOrderStart) ?? seededOrderStart
 
         self.orders = [
             DemoOrderRecord(
@@ -99,6 +118,11 @@ final class DemoDataStore {
                 customerPhone: "+15551234567",
                 pickupSlotStartIso: Self.iso(seededOrderStart),
                 pickupSlotEndIso: Self.iso(seededOrderEnd),
+                requestedPickupSlotStartIso: Self.iso(seededOrderStart),
+                requestedPickupSlotEndIso: Self.iso(seededOrderEnd),
+                estimatedPickupStartIso: Self.iso(seededOrderStart),
+                estimatedPickupEndIso: Self.iso(seededOrderEnd),
+                totalDelayMinutes: 0,
                 status: .preparing,
                 paymentStatus: .paidEstimated,
                 estimatedSubtotalCents: 3898,
@@ -112,6 +136,9 @@ final class DemoDataStore {
                 createdAt: now
             )
         ]
+
+        self.dayRanges = [:]
+        self.unavailableSlots = []
     }
 
     func catalog(category: ProductCategory?) -> [Product] {
@@ -121,41 +148,22 @@ final class DemoDataStore {
     }
 
     func pickupSlots(for date: Date) -> [PickupSlot] {
-        let calendar = Calendar.current
-        let dayStart = calendar.startOfDay(for: date)
-        let open = calendar.date(byAdding: .hour, value: 9, to: dayStart) ?? date
-        let close = calendar.date(byAdding: .hour, value: 20, to: dayStart) ?? date
+        let dateKey = Self.dayKey(from: date)
+        let range = rangeFor(dateKey: dateKey)
 
-        let now = Date()
-        let leadCutoff = now.addingTimeInterval(60 * 60)
-
-        var slots: [PickupSlot] = []
-        var cursor = open
-
-        while cursor < close {
-            let next = cursor.addingTimeInterval(30 * 60)
-            if cursor >= leadCutoff {
-                let startIso = Self.iso(cursor)
-                let endIso = Self.iso(next)
-                let bookedCount = orders.filter {
-                    $0.pickupSlotStartIso == startIso &&
-                        $0.status != .cancelled &&
-                        $0.status != .refunded
-                }.count
-                let capacity = 20
-                slots.append(
-                    PickupSlot(
-                        startIso: startIso,
-                        endIso: endIso,
-                        capacity: capacity,
-                        available: max(0, capacity - bookedCount)
-                    )
-                )
-            }
-            cursor = next
+        return buildSlotSnapshots(
+            dateKey: dateKey,
+            openHour: range.openHour,
+            closeHour: range.closeHour,
+            applyLeadTime: true
+        ).map {
+            PickupSlot(
+                startIso: $0.startIso,
+                endIso: $0.endIso,
+                capacity: $0.capacity,
+                available: $0.available
+            )
         }
-
-        return slots
     }
 
     func createOrder(payload: CreateOrderRequest) throws -> CreateOrderResponse {
@@ -163,8 +171,26 @@ final class DemoDataStore {
             throw DemoStoreError.invalidRequest("Full name is required")
         }
 
-        let start = Self.parseISO(payload.pickupSlotStartIso)
-        let end = (start ?? Date()).addingTimeInterval(30 * 60)
+        guard let slotStart = Self.parseISO(payload.pickupSlotStartIso) else {
+            throw DemoStoreError.invalidRequest("Invalid pickup slot")
+        }
+
+        let slotDateKey = Self.dayKey(from: slotStart)
+        let range = rangeFor(dateKey: slotDateKey)
+        let selectableSlots = buildSlotSnapshots(
+            dateKey: slotDateKey,
+            openHour: range.openHour,
+            closeHour: range.closeHour,
+            applyLeadTime: true
+        )
+
+        guard let selectedSlot = selectableSlots.first(where: { $0.startIso == payload.pickupSlotStartIso }) else {
+            throw DemoStoreError.invalidRequest("Invalid pickup slot")
+        }
+
+        guard selectedSlot.available > 0 else {
+            throw DemoStoreError.conflict("Pickup slot is full")
+        }
 
         var subtotal = 0
 
@@ -214,8 +240,13 @@ final class DemoDataStore {
             orderNumber: orderNumber,
             customerName: payload.customerName,
             customerPhone: normalizedPhone,
-            pickupSlotStartIso: payload.pickupSlotStartIso,
-            pickupSlotEndIso: Self.iso(end),
+            pickupSlotStartIso: selectedSlot.startIso,
+            pickupSlotEndIso: selectedSlot.endIso,
+            requestedPickupSlotStartIso: selectedSlot.startIso,
+            requestedPickupSlotEndIso: selectedSlot.endIso,
+            estimatedPickupStartIso: selectedSlot.startIso,
+            estimatedPickupEndIso: selectedSlot.endIso,
+            totalDelayMinutes: 0,
             status: .placed,
             paymentStatus: .paidEstimated,
             estimatedSubtotalCents: subtotal,
@@ -313,6 +344,104 @@ final class DemoDataStore {
         return orders[index].adminOrder
     }
 
+    func delayOrder(orderId: UUID, delayMinutes: Int) throws -> AdminOrder {
+        guard [10, 30, 60, 90].contains(delayMinutes) else {
+            throw DemoStoreError.invalidRequest("Delay minutes must be 10, 30, 60, or 90")
+        }
+
+        guard let index = orders.firstIndex(where: { $0.id == orderId }) else {
+            throw DemoStoreError.notFound("Order not found")
+        }
+
+        if orders[index].status == .cancelled || orders[index].status == .refunded {
+            throw DemoStoreError.conflict("Order cannot be delayed")
+        }
+
+        orders[index].status = .delayed
+        orders[index].totalDelayMinutes += delayMinutes
+
+        let slotShiftHours: Int
+        if delayMinutes == 60 {
+            slotShiftHours = 1
+        } else if delayMinutes == 90 {
+            slotShiftHours = 2
+        } else {
+            slotShiftHours = 0
+        }
+
+        if slotShiftHours > 0,
+           let currentStart = Self.parseISO(orders[index].pickupSlotStartIso),
+           let currentEnd = Self.parseISO(orders[index].pickupSlotEndIso) {
+            orders[index].pickupSlotStartIso = Self.iso(currentStart.addingTimeInterval(TimeInterval(slotShiftHours * 3600)))
+            orders[index].pickupSlotEndIso = Self.iso(currentEnd.addingTimeInterval(TimeInterval(slotShiftHours * 3600)))
+        }
+
+        if let requestedStart = Self.parseISO(orders[index].requestedPickupSlotStartIso) {
+            let estimatedStart = requestedStart.addingTimeInterval(TimeInterval(orders[index].totalDelayMinutes * 60))
+            let estimatedEnd = estimatedStart.addingTimeInterval(TimeInterval(slotDurationHours * 3600))
+            orders[index].estimatedPickupStartIso = Self.iso(estimatedStart)
+            orders[index].estimatedPickupEndIso = Self.iso(estimatedEnd)
+        }
+
+        return orders[index].adminOrder
+    }
+
+    func adminPickupAvailability() -> [AdminPickupDay] {
+        allowedDateKeys().map { dateKey in
+            let range = rangeFor(dateKey: dateKey)
+            let slots = buildSlotSnapshots(
+                dateKey: dateKey,
+                openHour: range.openHour,
+                closeHour: range.closeHour,
+                applyLeadTime: false
+            )
+
+            return AdminPickupDay(
+                date: dateKey,
+                openHour: range.openHour,
+                closeHour: range.closeHour,
+                slots: slots.map {
+                    AdminPickupSlot(
+                        startIso: $0.startIso,
+                        endIso: $0.endIso,
+                        capacity: $0.capacity,
+                        booked: $0.booked,
+                        available: $0.available,
+                        isUnavailable: $0.isUnavailable
+                    )
+                }
+            )
+        }
+    }
+
+    func updatePickupRange(date: String, openHour: Int, closeHour: Int) throws {
+        guard allowedDateKeys().contains(date) else {
+            throw DemoStoreError.invalidRequest("Date must be today or tomorrow")
+        }
+        guard openHour >= 0, closeHour <= 24, closeHour > openHour else {
+            throw DemoStoreError.invalidRequest("Invalid pickup range")
+        }
+
+        dayRanges[date] = PickupRange(openHour: openHour, closeHour: closeHour)
+    }
+
+    func toggleSlotUnavailable(slotStartIso: String, unavailable: Bool) throws {
+        guard let slotStart = Self.parseISO(slotStartIso) else {
+            throw DemoStoreError.invalidRequest("Invalid slot")
+        }
+
+        let dateKey = Self.dayKey(from: slotStart)
+        guard allowedDateKeys().contains(dateKey) else {
+            throw DemoStoreError.invalidRequest("Slot must be for today or tomorrow")
+        }
+
+        if unavailable {
+            unavailableSlots.insert(slotStartIso)
+        } else {
+            unavailableSlots.remove(slotStartIso)
+        }
+    }
+
     func fulfill(orderId: UUID) throws -> FulfillOrderResponse {
         guard let index = orders.firstIndex(where: { $0.id == orderId }) else {
             throw DemoStoreError.notFound("Order not found")
@@ -362,6 +491,63 @@ final class DemoDataStore {
         }
     }
 
+    private func allowedDateKeys() -> [String] {
+        let today = Self.dayKey(from: Date())
+        let tomorrow = Self.dayKey(from: Date().addingTimeInterval(24 * 60 * 60))
+        return [today, tomorrow]
+    }
+
+    private func rangeFor(dateKey: String) -> PickupRange {
+        dayRanges[dateKey] ?? PickupRange(openHour: 9, closeHour: 20)
+    }
+
+    private func buildSlotSnapshots(
+        dateKey: String,
+        openHour: Int,
+        closeHour: Int,
+        applyLeadTime: Bool
+    ) -> [SlotSnapshot] {
+        guard let dayStart = Self.dateFromKey(dateKey) else {
+            return []
+        }
+
+        let open = dayStart.addingTimeInterval(TimeInterval(openHour * 3600))
+        let close = dayStart.addingTimeInterval(TimeInterval(closeHour * 3600))
+        let leadCutoff = Date().addingTimeInterval(leadTimeSeconds)
+
+        var snapshots: [SlotSnapshot] = []
+        var cursor = open
+
+        while cursor < close {
+            let next = cursor.addingTimeInterval(TimeInterval(slotDurationHours * 3600))
+            if !applyLeadTime || cursor >= leadCutoff {
+                let startIso = Self.iso(cursor)
+                let endIso = Self.iso(next)
+                let bookedCount = orders.filter {
+                    $0.pickupSlotStartIso == startIso &&
+                        $0.status != .cancelled &&
+                        $0.status != .refunded
+                }.count
+                let isUnavailable = unavailableSlots.contains(startIso)
+                let available = isUnavailable ? 0 : max(0, slotCapacity - bookedCount)
+
+                snapshots.append(
+                    SlotSnapshot(
+                        startIso: startIso,
+                        endIso: endIso,
+                        booked: bookedCount,
+                        capacity: slotCapacity,
+                        available: available,
+                        isUnavailable: isUnavailable
+                    )
+                )
+            }
+            cursor = next
+        }
+
+        return snapshots
+    }
+
     private static func normalizePhone(_ value: String) -> String {
         value.filter { $0.isNumber || $0 == "+" }
     }
@@ -382,6 +568,20 @@ final class DemoDataStore {
         return formatter.string(from: date)
     }
 
+    private static func dayKey(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+
+    private static func dateFromKey(_ value: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.date(from: value)
+    }
+
     private static func demoImageURL(path: String) -> URL {
         URL(
             string: "https://images.unsplash.com/\(path)?auto=format&fit=crop&w=720&q=70"
@@ -394,8 +594,13 @@ private struct DemoOrderRecord {
     let orderNumber: String
     let customerName: String
     let customerPhone: String
-    let pickupSlotStartIso: String
-    let pickupSlotEndIso: String
+    var pickupSlotStartIso: String
+    var pickupSlotEndIso: String
+    let requestedPickupSlotStartIso: String
+    let requestedPickupSlotEndIso: String
+    var estimatedPickupStartIso: String
+    var estimatedPickupEndIso: String
+    var totalDelayMinutes: Int
     var status: OrderStatus
     var paymentStatus: PaymentStatus
     let estimatedSubtotalCents: Int
@@ -416,6 +621,9 @@ private struct DemoOrderRecord {
             customerPhone: customerPhone,
             pickupSlotStartIso: pickupSlotStartIso,
             pickupSlotEndIso: pickupSlotEndIso,
+            estimatedPickupStartIso: estimatedPickupStartIso,
+            estimatedPickupEndIso: estimatedPickupEndIso,
+            totalDelayMinutes: totalDelayMinutes,
             status: status,
             paymentStatus: paymentStatus,
             estimatedSubtotalCents: estimatedSubtotalCents,
@@ -436,6 +644,9 @@ private struct DemoOrderRecord {
             customerPhone: customerPhone,
             pickupSlotStartIso: pickupSlotStartIso,
             pickupSlotEndIso: pickupSlotEndIso,
+            estimatedPickupStartIso: estimatedPickupStartIso,
+            estimatedPickupEndIso: estimatedPickupEndIso,
+            totalDelayMinutes: totalDelayMinutes,
             status: status,
             paymentStatus: paymentStatus,
             estimatedSubtotalCents: estimatedSubtotalCents,

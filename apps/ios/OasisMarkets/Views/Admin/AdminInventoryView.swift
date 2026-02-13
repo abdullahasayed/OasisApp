@@ -43,6 +43,7 @@ struct AdminInventoryView: View {
                         ForEach(viewModel.products) { product in
                             AdminInventoryRow(
                                 product: product,
+                                didJustUpdate: viewModel.recentlyUpdatedProductIDs.contains(product.id),
                                 onSave: { value in
                                     Task {
                                         await viewModel.updateStock(
@@ -72,12 +73,14 @@ struct AdminInventoryView: View {
 
 private struct AdminInventoryRow: View {
     let product: Product
+    let didJustUpdate: Bool
     let onSave: (Double) -> Void
 
     @State private var stockValueText: String
 
-    init(product: Product, onSave: @escaping (Double) -> Void) {
+    init(product: Product, didJustUpdate: Bool, onSave: @escaping (Double) -> Void) {
         self.product = product
+        self.didJustUpdate = didJustUpdate
         self.onSave = onSave
         _stockValueText = State(initialValue: String(format: "%.2f", product.stockQuantity))
     }
@@ -113,7 +116,25 @@ private struct AdminInventoryRow: View {
                 }
 
                 Spacer()
-                OasisStatusBadge(title: product.category.displayName, tint: product.category.categoryTint)
+                VStack(alignment: .trailing, spacing: 6) {
+                    OasisStatusBadge(title: product.category.displayName, tint: product.category.categoryTint)
+                    if didJustUpdate {
+                        Label("Updated", systemImage: "checkmark.circle.fill")
+                            .font(.system(size: 12, weight: .semibold, design: .default))
+                            .foregroundStyle(Color.oasisJungleGreen)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(
+                                Capsule()
+                                    .fill(Color.oasisJungleGreen.opacity(0.12))
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(Color.oasisJungleGreen.opacity(0.25), lineWidth: 1)
+                                    )
+                            )
+                            .transition(.scale(scale: 0.9).combined(with: .opacity))
+                    }
+                }
             }
 
             TextField("Stock", text: $stockValueText)
@@ -128,5 +149,14 @@ private struct AdminInventoryRow: View {
             .buttonStyle(OasisPrimaryButtonStyle())
         }
         .oasisCard(prominence: 1.08)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(
+                    didJustUpdate ? Color.oasisJungleGreen.opacity(0.65) : Color.clear,
+                    lineWidth: didJustUpdate ? 2 : 0
+                )
+        )
+        .scaleEffect(didJustUpdate ? 1.01 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.78), value: didJustUpdate)
     }
 }

@@ -31,6 +31,11 @@ export interface DbOrder {
   customerPhone: string;
   pickupSlotStartIso: string;
   pickupSlotEndIso: string;
+  requestedPickupSlotStartIso: string;
+  requestedPickupSlotEndIso: string;
+  estimatedPickupStartIso: string;
+  estimatedPickupEndIso: string;
+  totalDelayMinutes: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   estimatedSubtotalCents: number;
@@ -72,6 +77,13 @@ export interface StoreConfig {
   taxRateBps: number;
 }
 
+export interface PickupDayRange {
+  serviceDate: string;
+  openHour: number;
+  closeHour: number;
+  updatedAt: string;
+}
+
 export interface AdminUser {
   id: string;
   email: string;
@@ -101,6 +113,11 @@ const mapOrder = (row: Record<string, unknown>): DbOrder => ({
   customerPhone: row.customer_phone as string,
   pickupSlotStartIso: (row.pickup_slot_start as Date).toISOString(),
   pickupSlotEndIso: (row.pickup_slot_end as Date).toISOString(),
+  requestedPickupSlotStartIso: (row.requested_pickup_slot_start as Date).toISOString(),
+  requestedPickupSlotEndIso: (row.requested_pickup_slot_end as Date).toISOString(),
+  estimatedPickupStartIso: (row.estimated_pickup_start as Date).toISOString(),
+  estimatedPickupEndIso: (row.estimated_pickup_end as Date).toISOString(),
+  totalDelayMinutes: Number(row.total_delay_minutes ?? 0),
   status: row.status as OrderStatus,
   paymentStatus: row.payment_status as PaymentStatus,
   estimatedSubtotalCents: Number(row.estimated_subtotal_cents),
@@ -210,6 +227,60 @@ export const updateStoreTaxRate = async (taxRateBps: number): Promise<void> => {
      WHERE id = TRUE`,
     [taxRateBps]
   );
+};
+
+export const getPickupDayRanges = async (
+  dates: string[]
+): Promise<Map<string, PickupDayRange>> => {
+  if (!dates.length) {
+    return new Map();
+  }
+
+  const result = await query<Record<string, unknown>>(
+    `SELECT service_date, open_hour, close_hour, updated_at
+     FROM pickup_day_ranges
+     WHERE service_date = ANY($1::date[])`,
+    [dates]
+  );
+
+  const ranges = new Map<string, PickupDayRange>();
+  for (const row of result.rows) {
+    const serviceDate = row.service_date as string;
+    ranges.set(serviceDate, {
+      serviceDate,
+      openHour: Number(row.open_hour),
+      closeHour: Number(row.close_hour),
+      updatedAt: (row.updated_at as Date).toISOString()
+    });
+  }
+
+  return ranges;
+};
+
+export const upsertPickupDayRange = async (
+  serviceDate: string,
+  openHour: number,
+  closeHour: number
+): Promise<PickupDayRange> => {
+  const result = await query<Record<string, unknown>>(
+    `INSERT INTO pickup_day_ranges (service_date, open_hour, close_hour)
+     VALUES ($1::date, $2, $3)
+     ON CONFLICT (service_date)
+     DO UPDATE SET
+       open_hour = EXCLUDED.open_hour,
+       close_hour = EXCLUDED.close_hour,
+       updated_at = NOW()
+     RETURNING service_date, open_hour, close_hour, updated_at`,
+    [serviceDate, openHour, closeHour]
+  );
+
+  const row = result.rows[0];
+  return {
+    serviceDate: row.service_date as string,
+    openHour: Number(row.open_hour),
+    closeHour: Number(row.close_hour),
+    updatedAt: (row.updated_at as Date).toISOString()
+  };
 };
 
 export const listCatalogProducts = async (
@@ -393,6 +464,47 @@ export const getDailySlotBookings = async (
   return map;
 };
 
+export const listUnavailableSlots = async (
+  startIso: string,
+  endIso: string
+): Promise<Set<string>> => {
+  const result = await query<Record<string, unknown>>(
+    `SELECT slot_start
+     FROM pickup_slot_unavailable
+     WHERE slot_start >= $1::timestamptz
+       AND slot_start < $2::timestamptz`,
+    [startIso, endIso]
+  );
+
+  return new Set(
+    result.rows.map((row) => (row.slot_start as Date).toISOString())
+  );
+};
+
+export const setSlotUnavailable = async (
+  slotStartIso: string,
+  slotEndIso: string,
+  serviceDate: string,
+  unavailable: boolean
+): Promise<void> => {
+  if (unavailable) {
+    await query(
+      `INSERT INTO pickup_slot_unavailable (slot_start, slot_end, service_date)
+       VALUES ($1::timestamptz, $2::timestamptz, $3::date)
+       ON CONFLICT (slot_start)
+       DO UPDATE SET slot_end = EXCLUDED.slot_end, service_date = EXCLUDED.service_date`,
+      [slotStartIso, slotEndIso, serviceDate]
+    );
+    return;
+  }
+
+  await query(
+    `DELETE FROM pickup_slot_unavailable
+     WHERE slot_start = $1::timestamptz`,
+    [slotStartIso]
+  );
+};
+
 export const getSlotBookingsCount = async (
   client: PoolClient,
   slotStartIso: string
@@ -414,6 +526,11 @@ export interface InsertOrderInput {
   customerPhone: string;
   pickupSlotStartIso: string;
   pickupSlotEndIso: string;
+  requestedPickupSlotStartIso: string;
+  requestedPickupSlotEndIso: string;
+  estimatedPickupStartIso: string;
+  estimatedPickupEndIso: string;
+  totalDelayMinutes: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   estimatedSubtotalCents: number;
@@ -436,6 +553,11 @@ export const insertOrder = async (
       customer_phone,
       pickup_slot_start,
       pickup_slot_end,
+      requested_pickup_slot_start,
+      requested_pickup_slot_end,
+      estimated_pickup_start,
+      estimated_pickup_end,
+      total_delay_minutes,
       status,
       payment_status,
       estimated_subtotal_cents,
@@ -445,7 +567,7 @@ export const insertOrder = async (
       payment_client_secret,
       payment_provider
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
     RETURNING *`,
     [
       payload.orderId,
@@ -454,6 +576,11 @@ export const insertOrder = async (
       payload.customerPhone,
       payload.pickupSlotStartIso,
       payload.pickupSlotEndIso,
+      payload.requestedPickupSlotStartIso,
+      payload.requestedPickupSlotEndIso,
+      payload.estimatedPickupStartIso,
+      payload.estimatedPickupEndIso,
+      payload.totalDelayMinutes,
       payload.status,
       payload.paymentStatus,
       payload.estimatedSubtotalCents,
@@ -651,6 +778,32 @@ export const patchOrderStatus = async (
   if (!result.rowCount) {
     return null;
   }
+  return mapOrder(result.rows[0]);
+};
+
+export const applyOrderDelay = async (
+  orderId: string,
+  delayMinutes: number,
+  slotShiftHours: number
+): Promise<DbOrder | null> => {
+  const result = await query<Record<string, unknown>>(
+    `UPDATE orders
+     SET total_delay_minutes = total_delay_minutes + $2::int,
+         status = 'delayed',
+         pickup_slot_start = pickup_slot_start + make_interval(hours => $3::int),
+         pickup_slot_end = pickup_slot_end + make_interval(hours => $3::int),
+         estimated_pickup_start = requested_pickup_slot_start + make_interval(mins => (total_delay_minutes + $2)::int),
+         estimated_pickup_end = requested_pickup_slot_start + make_interval(mins => (total_delay_minutes + $2 + 60)::int),
+         updated_at = NOW()
+     WHERE id = $1
+     RETURNING *`,
+    [orderId, delayMinutes, slotShiftHours]
+  );
+
+  if (!result.rowCount) {
+    return null;
+  }
+
   return mapOrder(result.rows[0]);
 };
 

@@ -35,6 +35,8 @@ export type AdminRole = z.infer<typeof adminRoleSchema>;
 
 export const moneyCentsSchema = z.number().int().nonnegative();
 
+export const hourOfDaySchema = z.number().int().min(0).max(23);
+
 export const phoneSchema = z
   .string()
   .trim()
@@ -107,6 +109,9 @@ export const lookupOrderResponseSchema = z.object({
   customerPhone: phoneSchema,
   pickupSlotStartIso: z.string().datetime(),
   pickupSlotEndIso: z.string().datetime(),
+  estimatedPickupStartIso: z.string().datetime(),
+  estimatedPickupEndIso: z.string().datetime(),
+  totalDelayMinutes: z.number().int().nonnegative(),
   status: orderStatusSchema,
   paymentStatus: paymentStatusSchema,
   estimatedSubtotalCents: moneyCentsSchema,
@@ -162,6 +167,19 @@ export const patchOrderStatusRequestSchema = z.object({
 });
 export type PatchOrderStatusRequest = z.infer<typeof patchOrderStatusRequestSchema>;
 
+export const delayMinutesSchema = z.union([
+  z.literal(10),
+  z.literal(30),
+  z.literal(60),
+  z.literal(90)
+]);
+export type DelayMinutes = z.infer<typeof delayMinutesSchema>;
+
+export const delayOrderRequestSchema = z.object({
+  delayMinutes: delayMinutesSchema
+});
+export type DelayOrderRequest = z.infer<typeof delayOrderRequestSchema>;
+
 export const finalizeOrderItemSchema = z.object({
   orderItemId: z.string().uuid(),
   finalWeightLb: z.number().positive().optional(),
@@ -185,6 +203,46 @@ export const fulfillOrderResponseSchema = z.object({
   escposPayloadBase64: z.string()
 });
 export type FulfillOrderResponse = z.infer<typeof fulfillOrderResponseSchema>;
+
+export const adminPickupSlotSchema = z.object({
+  startIso: z.string().datetime(),
+  endIso: z.string().datetime(),
+  capacity: z.number().int().nonnegative(),
+  booked: z.number().int().nonnegative(),
+  available: z.number().int().nonnegative(),
+  isUnavailable: z.boolean()
+});
+export type AdminPickupSlot = z.infer<typeof adminPickupSlotSchema>;
+
+export const adminPickupDaySchema = z.object({
+  date: z.string().date(),
+  openHour: hourOfDaySchema,
+  closeHour: z.number().int().min(1).max(24),
+  slots: z.array(adminPickupSlotSchema)
+});
+export type AdminPickupDay = z.infer<typeof adminPickupDaySchema>;
+
+export const adminPickupAvailabilityResponseSchema = z.object({
+  days: z.array(adminPickupDaySchema)
+});
+export type AdminPickupAvailabilityResponse = z.infer<
+  typeof adminPickupAvailabilityResponseSchema
+>;
+
+export const updatePickupDayRangeRequestSchema = z.object({
+  openHour: hourOfDaySchema,
+  closeHour: z.number().int().min(1).max(24)
+});
+export type UpdatePickupDayRangeRequest = z.infer<
+  typeof updatePickupDayRangeRequestSchema
+>;
+
+export const togglePickupSlotUnavailableRequestSchema = z.object({
+  unavailable: z.boolean()
+});
+export type TogglePickupSlotUnavailableRequest = z.infer<
+  typeof togglePickupSlotUnavailableRequestSchema
+>;
 
 export const taxConfigSchema = z.object({
   rateBps: z.number().int().min(0).max(10000)

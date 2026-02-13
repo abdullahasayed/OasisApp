@@ -22,7 +22,21 @@ final class CheckoutViewModel: ObservableObject {
         activeSlotsRequestID = requestID
         errorMessage = nil
         do {
-            let slots = try await apiClient.fetchPickupSlots(date: date).filter { $0.available > 0 }
+            let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: date) ?? date
+            async let todaySlots = apiClient.fetchPickupSlots(date: date)
+            async let tomorrowSlots = apiClient.fetchPickupSlots(date: tomorrow)
+
+            let slots = try await (todaySlots + tomorrowSlots)
+                .filter { $0.available > 0 }
+                .sorted {
+                    guard
+                        let lhs = OasisDateText.parseISO($0.startIso),
+                        let rhs = OasisDateText.parseISO($1.startIso)
+                    else {
+                        return $0.startIso < $1.startIso
+                    }
+                    return lhs < rhs
+                }
             guard activeSlotsRequestID == requestID else { return }
             availableSlots = slots
 

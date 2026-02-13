@@ -278,6 +278,35 @@ enum OasisDateText {
         return formatter
     }()
 
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.dateStyle = .none
+        return formatter
+    }()
+
+    private static let dayKeyFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
+    private static let dateInputFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
+    private static let dayHeaderFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateStyle = .full
+        formatter.timeStyle = .none
+        return formatter
+    }()
+
     static func parseISO(_ value: String) -> Date? {
         isoWithFractional.date(from: value) ?? isoStandard.date(from: value)
     }
@@ -296,5 +325,36 @@ enum OasisDateText {
     static func pointInTime(_ value: String) -> String {
         guard let date = parseISO(value) else { return value }
         return fullDateTimeFormatter.string(from: date)
+    }
+
+    static func hourRange(startISO: String, endISO: String) -> String {
+        guard
+            let start = parseISO(startISO),
+            let end = parseISO(endISO)
+        else {
+            return "\(startISO) - \(endISO)"
+        }
+
+        return "\(timeFormatter.string(from: start)) - \(timeFormatter.string(from: end))"
+    }
+
+    static func dayKey(startISO: String) -> String {
+        guard let date = parseISO(startISO) else { return startISO }
+        return dayKeyFormatter.string(from: date)
+    }
+
+    static func dayHeader(for date: String) -> String {
+        guard let day = dateInputFormatter.date(from: date) else {
+            return date
+        }
+
+        let calendar = Calendar.current
+        if calendar.isDateInToday(day) {
+            return "Today"
+        }
+        if calendar.isDateInTomorrow(day) {
+            return "Tomorrow"
+        }
+        return dayHeaderFormatter.string(from: day)
     }
 }

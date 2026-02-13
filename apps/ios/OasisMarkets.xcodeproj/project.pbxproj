@@ -13,6 +13,7 @@
 		1239A246475E1C0F9B1693B8 /* OasisMarketsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE227CA61C36E441E489D40C /* OasisMarketsApp.swift */; };
 		252406742BC5255D0641E666 /* AdminInventoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFAF39F6A8FF3805DD6ABAB6 /* AdminInventoryView.swift */; };
 		2ECEF23453870916F5C20FCF /* AdminLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C552371D2D34F4F4F64CFC66 /* AdminLoginView.swift */; };
+		B1C2D3E4F5061728394A5B6C /* AdminPickupAvailabilityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* AdminPickupAvailabilityView.swift */; };
 		330C8C5EDD95F34B8D06692A /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8710BFD45C34240C71E50F /* ImageLoader.swift */; };
 		37FA5BC76170C8D838892FA1 /* ReceiptPrinterClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E21E6FC5D890BCFF089F687 /* ReceiptPrinterClient.swift */; };
 		382D80D2E9D82A2FA0486FD2 /* OrderLookupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2551EF8E76FD533CEC502F96 /* OrderLookupView.swift */; };
@@ -33,6 +34,7 @@
 		BCCE0DA039B4DC044B0983A5 /* ShopperShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C5BEEEDEE66088947440A2 /* ShopperShellView.swift */; };
 		C310EE5009F59E5A7293EAB5 /* CartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1F22DF4D3FB946E6E23627 /* CartView.swift */; };
 		D2A98548EAC1CA8E73A1CC29 /* AdminOrdersViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5150BD8E47F2D4716FB915 /* AdminOrdersViewModel.swift */; };
+		D1E2F30415263748A9B6C7D8 /* AdminPickupAvailabilityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F40516273849A5B6C7 /* AdminPickupAvailabilityViewModel.swift */; };
 		D98FAC1ABFBB48FBB0493C22 /* ApiClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C95DC8EFF5C2CD70FA58F98 /* ApiClient.swift */; };
 		E95FD37BD1CD438296192295 /* OasisRemoteImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71E5B25E4D4E9108482B06BC /* OasisRemoteImage.swift */; };
 		F83A18CA8E4F3A3FF16DA747 /* OasisBrandViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8FF3CBB570B6B6B64ACCB25 /* OasisBrandViews.swift */; };
@@ -43,6 +45,7 @@
 		01FA29105C0BD960403455A7 /* AdminDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminDashboardView.swift; sourceTree = "<group>"; };
 		028B35AFB57882888B6DF0BA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		0FE175A09277375848A0A4CE /* PaymentClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentClient.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* AdminPickupAvailabilityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminPickupAvailabilityView.swift; sourceTree = "<group>"; };
 		1BB3AF5BFA30ACC9257794F4 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		1C95DC8EFF5C2CD70FA58F98 /* ApiClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiClient.swift; sourceTree = "<group>"; };
 		2551EF8E76FD533CEC502F96 /* OrderLookupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderLookupView.swift; sourceTree = "<group>"; };
@@ -63,6 +66,7 @@
 		AD5A3520C3514064195FA0F0 /* OrderLookupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderLookupViewModel.swift; sourceTree = "<group>"; };
 		BC8710BFD45C34240C71E50F /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
 		BE1B73192F375923DBA8441E /* CheckoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutView.swift; sourceTree = "<group>"; };
+		C1D2E3F40516273849A5B6C7 /* AdminPickupAvailabilityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminPickupAvailabilityViewModel.swift; sourceTree = "<group>"; };
 		C0B2FAC4019874C1CFC04395 /* CatalogViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogViewModel.swift; sourceTree = "<group>"; };
 		C552371D2D34F4F4F64CFC66 /* AdminLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminLoginView.swift; sourceTree = "<group>"; };
 		D1C5BEEEDEE66088947440A2 /* ShopperShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopperShellView.swift; sourceTree = "<group>"; };
@@ -116,6 +120,7 @@
 				7E0893CF79F73BD326BF80CF /* AdminAuthViewModel.swift */,
 				ECC366DF787C6752F549239C /* AdminInventoryViewModel.swift */,
 				3C5150BD8E47F2D4716FB915 /* AdminOrdersViewModel.swift */,
+				C1D2E3F40516273849A5B6C7 /* AdminPickupAvailabilityViewModel.swift */,
 				C0B2FAC4019874C1CFC04395 /* CatalogViewModel.swift */,
 				82B8921500437CD6B0595AD9 /* CheckoutViewModel.swift */,
 				AD5A3520C3514064195FA0F0 /* OrderLookupViewModel.swift */,
@@ -194,6 +199,7 @@
 				FFAF39F6A8FF3805DD6ABAB6 /* AdminInventoryView.swift */,
 				C552371D2D34F4F4F64CFC66 /* AdminLoginView.swift */,
 				5FCD4022292B1ADF92496FBD /* AdminOrdersView.swift */,
+				A1B2C3D4E5F60718293A4B5C /* AdminPickupAvailabilityView.swift */,
 			);
 			path = Admin;
 			sourceTree = "<group>";
@@ -263,6 +269,8 @@
 				2ECEF23453870916F5C20FCF /* AdminLoginView.swift in Sources */,
 				874056175ED18915EEB0D49D /* AdminOrdersView.swift in Sources */,
 				D2A98548EAC1CA8E73A1CC29 /* AdminOrdersViewModel.swift in Sources */,
+				B1C2D3E4F5061728394A5B6C /* AdminPickupAvailabilityView.swift in Sources */,
+				D1E2F30415263748A9B6C7D8 /* AdminPickupAvailabilityViewModel.swift in Sources */,
 				D98FAC1ABFBB48FBB0493C22 /* ApiClient.swift in Sources */,
 				7E230044BCAE9E179A1415ED /* AppState.swift in Sources */,
 				C310EE5009F59E5A7293EAB5 /* CartView.swift in Sources */,

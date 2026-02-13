@@ -77,6 +77,16 @@ struct AdminOrdersView: View {
                                         )
                                     }
                                 },
+                                onDelay: { minutes in
+                                    Task {
+                                        await viewModel.delay(
+                                            order: order,
+                                            by: minutes,
+                                            apiClient: apiClient,
+                                            token: appState.adminAccessToken
+                                        )
+                                    }
+                                },
                                 onFulfill: {
                                     Task {
                                         await viewModel.fulfill(
@@ -122,8 +132,10 @@ struct AdminOrdersView: View {
 private struct AdminOrderCard: View {
     let order: AdminOrder
     let onTransition: (OrderStatus) -> Void
+    let onDelay: (Int) -> Void
     let onFulfill: () -> Void
     let onRefund: () -> Void
+    @State private var showingDelayOptions = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -143,6 +155,22 @@ private struct AdminOrderCard: View {
             Text(order.pickupWindowLabel)
                 .font(.system(size: 13, weight: .medium, design: .default))
                 .foregroundStyle(Color.oasisMutedInk)
+
+            if order.totalDelayMinutes > 0 {
+                HStack(spacing: 8) {
+                    OasisStatusBadge(
+                        title: "Delayed +\(order.totalDelayMinutes)m",
+                        tint: .orange
+                    )
+                    Text(order.estimatedPickupWindowLabel)
+                        .font(.system(size: 12, weight: .semibold, design: .default))
+                        .foregroundStyle(Color.oasisRoyalBlue)
+                }
+            } else {
+                Text("Estimated: \(order.estimatedPickupWindowLabel)")
+                    .font(.system(size: 12, weight: .semibold, design: .default))
+                    .foregroundStyle(Color.oasisRoyalBlue)
+            }
 
             HStack {
                 Text("Estimated")
@@ -170,7 +198,7 @@ private struct AdminOrderCard: View {
                 HStack(spacing: 8) {
                     actionButton("Preparing") { onTransition(.preparing) }
                     actionButton("Ready") { onTransition(.ready) }
-                    actionButton("Delay") { onTransition(.delayed) }
+                    delayButton
                     actionButton("Cancel") { onTransition(.cancelled) }
                     actionButton("Fulfill") { onFulfill() }
                     actionButton("Refund") { onRefund() }
@@ -183,5 +211,23 @@ private struct AdminOrderCard: View {
     private func actionButton(_ title: String, action: @escaping () -> Void) -> some View {
         Button(title, action: action)
             .buttonStyle(OasisSecondaryButtonStyle())
+    }
+
+    private var delayButton: some View {
+        Button("Delay") {
+            showingDelayOptions = true
+        }
+        .buttonStyle(OasisSecondaryButtonStyle())
+        .confirmationDialog(
+            "Delay order by how many minutes?",
+            isPresented: $showingDelayOptions,
+            titleVisibility: .visible
+        ) {
+            Button("10 minutes") { onDelay(10) }
+            Button("30 minutes") { onDelay(30) }
+            Button("60 minutes") { onDelay(60) }
+            Button("90 minutes") { onDelay(90) }
+            Button("Cancel", role: .cancel) {}
+        }
     }
 }

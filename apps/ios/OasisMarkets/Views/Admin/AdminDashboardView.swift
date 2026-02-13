@@ -14,6 +14,11 @@ struct AdminDashboardView: View {
                 .tabItem {
                     Label("Orders", systemImage: "list.bullet.rectangle.portrait.fill")
                 }
+
+            AdminPickupAvailabilityView()
+                .tabItem {
+                    Label("Pickup", systemImage: "clock.badge.checkmark")
+                }
         }
         .toolbarBackground(Color.white.opacity(0.95), for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)

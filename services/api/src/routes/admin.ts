@@ -1,43 +1,79 @@
 import bcrypt from "bcryptjs";
+import { DateTime } from "luxon";
 import type { FastifyPluginAsync } from "fastify";
 import {
   adminLoginRequestSchema,
+  adminPickupAvailabilityResponseSchema,
   createAdminUserRequestSchema,
+  delayOrderRequestSchema,
   finalizeOrderRequestSchema,
   fulfillOrderResponseSchema,
   patchOrderStatusRequestSchema,
   patchStockRequestSchema,
   refundOrderRequestSchema,
+  togglePickupSlotUnavailableRequestSchema,
+  updatePickupDayRangeRequestSchema,
   upsertProductRequestSchema,
   orderStatusSchema
 } from "@oasis/contracts";
 import {
+  applyOrderDelay,
   createAdminUser,
   createRefund,
+  createProduct,
+  getDailySlotBookings,
   getOrderById,
+  getPickupDayRanges,
   getReceiptByOrderId,
   getRefundedAmount,
   getStoreConfig,
   listAdminProducts,
   listOrderItems,
   listOrders,
+  listUnavailableSlots,
   patchOrderStatus,
   patchProduct,
   patchProductStock,
+  restoreStockForOrder,
   saveReceipt,
+  setSlotUnavailable,
   updateFinalizedOrderItem,
   updateOrderFinalTotals,
   updateOrderPaymentStatus,
-  restoreStockForOrder,
-  createProduct
+  upsertPickupDayRange
 } from "../db/repositories.js";
 import { withTransaction } from "../db/pool.js";
 import { buildTotals } from "../services/orderCalculation.js";
+import {
+  buildPickupSlotsForDate,
+  getDayBoundaryIso,
+  getHourlyRangeFromStoreConfig
+} from "../services/pickupSlots.js";
 import { buildCustomerReceiptPdf } from "../services/receipts.js";
 import { issueAdminTokens, verifyAdminPassword } from "../auth/adminAuth.js";
+import { slotShiftHoursForDelay } from "../utils/delayRules.js";
 import { assertValidStatusTransition } from "../utils/statusFlow.js";
 import { clampRefundAmount } from "../utils/refundMath.js";
 import { mapDbProductToContract } from "./mappers.js";
+
+const isDateInAllowedWindow = (date: string, timezone: string): boolean => {
+  const day = DateTime.fromISO(date, { zone: timezone }).startOf("day");
+  if (!day.isValid) {
+    return false;
+  }
+
+  const today = DateTime.now().setZone(timezone).startOf("day");
+  const tomorrow = today.plus({ days: 1 });
+  return day.hasSame(today, "day") || day.hasSame(tomorrow, "day");
+};
+
+const getAllowedDates = (timezone: string): string[] => {
+  const today = DateTime.now().setZone(timezone).startOf("day");
+  const tomorrow = today.plus({ days: 1 });
+  return [today.toISODate(), tomorrow.toISODate()].filter(
+    (value): value is string => Boolean(value)
+  );
+};
 
 const adminRoutes: FastifyPluginAsync = async (app) => {
   app.post("/admin/auth/login", async (request, reply) => {
@@ -156,6 +192,141 @@ const adminRoutes: FastifyPluginAsync = async (app) => {
   );
 
   app.get(
+    "/admin/pickup-availability",
+    {
+      preHandler: [app.authenticateAdmin]
+    },
+    async (_request, reply) => {
+      const config = await getStoreConfig();
+      const allowedDates = getAllowedDates(config.timezone);
+      const ranges = await getPickupDayRanges(allowedDates);
+      const defaultRange = getHourlyRangeFromStoreConfig(config);
+
+      const days = await Promise.all(
+        allowedDates.map(async (date) => {
+          const { dayStartIso, dayEndIso } = getDayBoundaryIso(date, config.timezone);
+          const bookings = await getDailySlotBookings(dayStartIso, dayEndIso);
+          const unavailable = await listUnavailableSlots(dayStartIso, dayEndIso);
+          const override = ranges.get(date);
+
+          const slots = buildPickupSlotsForDate(
+            date,
+            {
+              timezone: config.timezone,
+              slotCapacity: config.slotCapacity,
+              leadTimeMinutes: 0,
+              openHour: override?.openHour ?? defaultRange.openHour,
+              closeHour: override?.closeHour ?? defaultRange.closeHour,
+              unavailableSlotStarts: unavailable
+            },
+            bookings,
+            DateTime.fromISO(date, { zone: config.timezone }).startOf("day")
+          );
+
+          return {
+            date,
+            openHour: override?.openHour ?? defaultRange.openHour,
+            closeHour: override?.closeHour ?? defaultRange.closeHour,
+            slots: slots.map((slot) => {
+              const booked = bookings.get(slot.startIso) ?? 0;
+              const isUnavailable = unavailable.has(slot.startIso);
+              return {
+                startIso: slot.startIso,
+                endIso: slot.endIso,
+                capacity: slot.capacity,
+                booked,
+                available: slot.available,
+                isUnavailable
+              };
+            })
+          };
+        })
+      );
+
+      return reply.send(adminPickupAvailabilityResponseSchema.parse({ days }));
+    }
+  );
+
+  app.put(
+    "/admin/pickup-availability/:date/range",
+    {
+      preHandler: [app.authenticateAdmin]
+    },
+    async (request, reply) => {
+      const { date } = request.params as { date: string };
+      const parsed = updatePickupDayRangeRequestSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ message: parsed.error.flatten() });
+      }
+
+      const config = await getStoreConfig();
+      if (!isDateInAllowedWindow(date, config.timezone)) {
+        return reply.code(400).send({ message: "Date must be today or tomorrow" });
+      }
+
+      if (parsed.data.closeHour <= parsed.data.openHour) {
+        return reply
+          .code(400)
+          .send({ message: "closeHour must be greater than openHour" });
+      }
+
+      await upsertPickupDayRange(date, parsed.data.openHour, parsed.data.closeHour);
+
+      return reply.send({
+        date,
+        openHour: parsed.data.openHour,
+        closeHour: parsed.data.closeHour
+      });
+    }
+  );
+
+  app.put(
+    "/admin/pickup-slots/:slotStartIso/unavailable",
+    {
+      preHandler: [app.authenticateAdmin]
+    },
+    async (request, reply) => {
+      const { slotStartIso } = request.params as { slotStartIso: string };
+      const parsed = togglePickupSlotUnavailableRequestSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ message: parsed.error.flatten() });
+      }
+
+      const decoded = decodeURIComponent(slotStartIso);
+      const slotStart = DateTime.fromISO(decoded, { zone: "utc" });
+      if (!slotStart.isValid) {
+        return reply.code(400).send({ message: "Invalid slot start ISO" });
+      }
+
+      const config = await getStoreConfig();
+      const serviceDate = slotStart.setZone(config.timezone).toISODate();
+      if (!serviceDate || !isDateInAllowedWindow(serviceDate, config.timezone)) {
+        return reply.code(400).send({ message: "Slot must be for today or tomorrow" });
+      }
+
+      const slotEnd = slotStart.plus({ hours: 1 });
+      const slotStartIsoNormalized = slotStart.toISO();
+      const slotEndIsoNormalized = slotEnd.toISO();
+
+      if (!slotStartIsoNormalized || !slotEndIsoNormalized) {
+        return reply.code(400).send({ message: "Invalid slot window" });
+      }
+
+      await setSlotUnavailable(
+        slotStartIsoNormalized,
+        slotEndIsoNormalized,
+        serviceDate,
+        parsed.data.unavailable
+      );
+
+      return reply.send({
+        slotStartIso: slotStartIsoNormalized,
+        unavailable: parsed.data.unavailable
+      });
+    }
+  );
+
+  app.get(
     "/admin/orders",
     {
       preHandler: [app.authenticateAdmin]
@@ -214,6 +385,37 @@ const adminRoutes: FastifyPluginAsync = async (app) => {
       }
 
       const updated = await patchOrderStatus(id, parsed.data.status);
+      return reply.send(updated);
+    }
+  );
+
+  app.post(
+    "/admin/orders/:id/delay",
+    {
+      preHandler: [app.authenticateAdmin]
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string };
+      const parsed = delayOrderRequestSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ message: parsed.error.flatten() });
+      }
+
+      const order = await getOrderById(id);
+      if (!order) {
+        return reply.code(404).send({ message: "Order not found" });
+      }
+
+      if (order.status === "cancelled" || order.status === "refunded") {
+        return reply.code(409).send({ message: "Order cannot be delayed" });
+      }
+
+      const shiftHours = slotShiftHoursForDelay(parsed.data.delayMinutes);
+      const updated = await applyOrderDelay(id, parsed.data.delayMinutes, shiftHours);
+      if (!updated) {
+        return reply.code(500).send({ message: "Failed to delay order" });
+      }
+
       return reply.send(updated);
     }
   );

@@ -211,6 +211,93 @@ final class ApiClient: ObservableObject {
         let _: AdminOrder = try await send(request)
     }
 
+    func delayOrder(accessToken: String, orderId: UUID, delayMinutes: Int) async throws {
+        if isDemoMode {
+            _ = try await runDemo {
+                _ = accessToken
+                return try demoStore.delayOrder(orderId: orderId, delayMinutes: delayMinutes)
+            }
+            return
+        }
+
+        var request = URLRequest(url: baseURL.appending(path: "/v1/admin/orders/\(orderId.uuidString)/delay"))
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try encoder.encode(DelayOrderRequest(delayMinutes: delayMinutes))
+
+        let _: AdminOrder = try await send(request)
+    }
+
+    func fetchAdminPickupAvailability(accessToken: String) async throws -> [AdminPickupDay] {
+        if isDemoMode {
+            return try await runDemo {
+                _ = accessToken
+                return demoStore.adminPickupAvailability()
+            }
+        }
+
+        var request = URLRequest(url: baseURL.appending(path: "/v1/admin/pickup-availability"))
+        request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+
+        let response: AdminPickupAvailabilityResponse = try await send(request)
+        return response.days
+    }
+
+    func updateAdminPickupDayRange(
+        accessToken: String,
+        date: String,
+        openHour: Int,
+        closeHour: Int
+    ) async throws {
+        if isDemoMode {
+            _ = try await runDemo {
+                _ = accessToken
+                try demoStore.updatePickupRange(date: date, openHour: openHour, closeHour: closeHour)
+                return EmptyResponse()
+            }
+            return
+        }
+
+        var request = URLRequest(
+            url: baseURL.appending(path: "/v1/admin/pickup-availability/\(date)/range")
+        )
+        request.httpMethod = "PUT"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try encoder.encode(
+            UpdatePickupDayRangeRequest(openHour: openHour, closeHour: closeHour)
+        )
+
+        let _: PickupRangeUpdateResponse = try await send(request)
+    }
+
+    func toggleAdminPickupSlotUnavailable(
+        accessToken: String,
+        slotStartIso: String,
+        unavailable: Bool
+    ) async throws {
+        if isDemoMode {
+            _ = try await runDemo {
+                _ = accessToken
+                try demoStore.toggleSlotUnavailable(slotStartIso: slotStartIso, unavailable: unavailable)
+                return EmptyResponse()
+            }
+            return
+        }
+
+        let encodedSlot = slotStartIso.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? slotStartIso
+        var request = URLRequest(
+            url: baseURL.appending(path: "/v1/admin/pickup-slots/\(encodedSlot)/unavailable")
+        )
+        request.httpMethod = "PUT"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try encoder.encode(TogglePickupSlotUnavailableRequest(unavailable: unavailable))
+
+        let _: SlotUnavailableToggleResponse = try await send(request)
+    }
+
     func fulfillOrder(accessToken: String, orderId: UUID) async throws -> FulfillOrderResponse {
         if isDemoMode {
             return try await runDemo {
@@ -306,6 +393,17 @@ enum ApiError: LocalizedError {
 struct FulfillOrderResponse: Codable {
     let receiptUrl: URL
     let escposPayloadBase64: String
+}
+
+private struct PickupRangeUpdateResponse: Codable {
+    let date: String
+    let openHour: Int
+    let closeHour: Int
+}
+
+private struct SlotUnavailableToggleResponse: Codable {
+    let slotStartIso: String
+    let unavailable: Bool
 }
 
 private struct EmptyResponse: Codable {}

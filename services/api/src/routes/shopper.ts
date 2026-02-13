@@ -12,6 +12,7 @@ import {
   getDailySlotBookings,
   getOrderById,
   getOrderByLookup,
+  getPickupDayRanges,
   getProductsByIds,
   getReceiptByOrderId,
   getSlotBookingsCount,
@@ -20,12 +21,14 @@ import {
   insertOrder,
   insertOrderItems,
   listCatalogProducts,
+  listUnavailableSlots,
   getProductById
 } from "../db/repositories.js";
 import { withTransaction } from "../db/pool.js";
 import {
   buildPickupSlotsForDate,
-  getDayBoundaryIso
+  getDayBoundaryIso,
+  getHourlyRangeFromStoreConfig
 } from "../services/pickupSlots.js";
 import { buildEstimatedLines, buildTotals } from "../services/orderCalculation.js";
 import { buildOrderNumber } from "../utils/orderNumber.js";
@@ -65,7 +68,23 @@ const shopperRoutes: FastifyPluginAsync = async (app) => {
     const config = await getStoreConfig();
     const { dayStartIso, dayEndIso } = getDayBoundaryIso(date, config.timezone);
     const bookings = await getDailySlotBookings(dayStartIso, dayEndIso);
-    const slots = buildPickupSlotsForDate(date, config, bookings);
+    const unavailableSlots = await listUnavailableSlots(dayStartIso, dayEndIso);
+    const dayRanges = await getPickupDayRanges([date]);
+    const defaultRange = getHourlyRangeFromStoreConfig(config);
+    const range = dayRanges.get(date);
+
+    const slots = buildPickupSlotsForDate(
+      date,
+      {
+        timezone: config.timezone,
+        slotCapacity: config.slotCapacity,
+        leadTimeMinutes: config.leadTimeMinutes,
+        openHour: range?.openHour ?? defaultRange.openHour,
+        closeHour: range?.closeHour ?? defaultRange.closeHour,
+        unavailableSlotStarts: unavailableSlots
+      },
+      bookings
+    );
     return { slots };
   });
 
@@ -90,7 +109,24 @@ const shopperRoutes: FastifyPluginAsync = async (app) => {
 
     const { dayStartIso, dayEndIso } = getDayBoundaryIso(slotDate, config.timezone);
     const bookings = await getDailySlotBookings(dayStartIso, dayEndIso);
-    const slots = buildPickupSlotsForDate(slotDate, config, bookings);
+    const unavailableSlots = await listUnavailableSlots(dayStartIso, dayEndIso);
+    const dayRanges = await getPickupDayRanges([slotDate]);
+    const defaultRange = getHourlyRangeFromStoreConfig(config);
+    const range = dayRanges.get(slotDate);
+
+    const slots = buildPickupSlotsForDate(
+      slotDate,
+      {
+        timezone: config.timezone,
+        slotCapacity: config.slotCapacity,
+        leadTimeMinutes: config.leadTimeMinutes,
+        openHour: range?.openHour ?? defaultRange.openHour,
+        closeHour: range?.closeHour ?? defaultRange.closeHour,
+        unavailableSlotStarts: unavailableSlots
+      },
+      bookings
+    );
+
     const selectedSlot = slots.find((slot) => slot.startIso === payload.pickupSlotStartIso);
 
     if (!selectedSlot) {
@@ -169,6 +205,11 @@ const shopperRoutes: FastifyPluginAsync = async (app) => {
           customerPhone: normalizedPhone,
           pickupSlotStartIso: selectedSlot.startIso,
           pickupSlotEndIso: selectedSlot.endIso,
+          requestedPickupSlotStartIso: selectedSlot.startIso,
+          requestedPickupSlotEndIso: selectedSlot.endIso,
+          estimatedPickupStartIso: selectedSlot.startIso,
+          estimatedPickupEndIso: selectedSlot.endIso,
+          totalDelayMinutes: 0,
           status: "placed",
           paymentStatus: "pending",
           estimatedSubtotalCents: totals.subtotalCents,

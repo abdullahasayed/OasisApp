@@ -20,8 +20,12 @@ Base prefix: `/v1`
 - `POST /admin/products`
 - `PATCH /admin/products/:id`
 - `PATCH /admin/products/:id/stock`
+- `GET /admin/pickup-availability`
+- `PUT /admin/pickup-availability/:date/range`
+- `PUT /admin/pickup-slots/:slotStartIso/unavailable`
 - `GET /admin/orders?status=...`
 - `PATCH /admin/orders/:id/status`
+- `POST /admin/orders/:id/delay`
 - `POST /admin/orders/:id/finalize`
 - `POST /admin/orders/:id/refund`
 - `POST /admin/orders/:id/fulfill`

@@ -53,6 +53,22 @@ struct OrderLookupView: View {
                             .font(.system(size: 14, weight: .medium, design: .default))
                             .foregroundStyle(Color.oasisMutedInk)
 
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Estimated pickup")
+                                .font(.system(size: 12, weight: .semibold, design: .default))
+                                .foregroundStyle(Color.oasisMutedInk)
+                            Text(result.estimatedPickupWindowLabel)
+                                .font(.system(size: 14, weight: .semibold, design: .default))
+                                .foregroundStyle(Color.oasisRoyalBlue)
+                        }
+
+                        if result.totalDelayMinutes > 0 {
+                            OasisStatusBadge(
+                                title: "Delayed +\(result.totalDelayMinutes) minutes",
+                                tint: .orange
+                            )
+                        }
+
                         Divider()
 
                         Text("Estimated total: \(result.estimatedTotalCents.usd)")
