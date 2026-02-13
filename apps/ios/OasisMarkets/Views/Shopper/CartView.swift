@@ -6,15 +6,38 @@ struct CartView: View {
     var body: some View {
         Group {
             if appState.cartItems.isEmpty {
-                ContentUnavailableView(
-                    "Your cart is empty",
-                    systemImage: "cart",
-                    description: Text("Add groceries to start your pickup order.")
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                VStack(spacing: 14) {
+                    ContentUnavailableView(
+                        "Your cart is empty",
+                        systemImage: "cart",
+                        description: Text("Add groceries to start your pickup order.")
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
             } else {
                 ScrollView {
-                    VStack(spacing: 12) {
+                    VStack(spacing: 14) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Cart Summary")
+                                .font(.system(size: 24, weight: .black, design: .default))
+                                .foregroundStyle(Color.oasisInk)
+                            Text("Review quantities before checkout.")
+                                .font(.system(size: 14, weight: .medium, design: .default))
+                                .foregroundStyle(Color.oasisMutedInk)
+
+                            HStack(spacing: 10) {
+                                OasisStatusBadge(
+                                    title: "\(appState.cartItems.count) Items",
+                                    tint: .oasisRoyalBlue
+                                )
+                                OasisStatusBadge(
+                                    title: appState.estimatedCartTotalCents.usd,
+                                    tint: .oasisJungleGreen
+                                )
+                            }
+                        }
+                        .oasisCard(prominence: 1.2)
+
                         ForEach(appState.cartItems) { item in
                             HStack(alignment: .top, spacing: 12) {
                                 VStack(alignment: .leading, spacing: 6) {
@@ -47,7 +70,7 @@ struct CartView: View {
                                     .buttonStyle(OasisSecondaryButtonStyle())
                                 }
                             }
-                            .oasisCard()
+                            .oasisCard(prominence: 1.05)
                         }
 
                         VStack(alignment: .leading, spacing: 8) {
@@ -59,7 +82,7 @@ struct CartView: View {
                                 .foregroundStyle(Color.oasisInk)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .oasisCard()
+                        .oasisCard(prominence: 1.2)
                     }
                     .padding(.horizontal, 4)
                     .padding(.bottom, 110)
@@ -74,7 +97,7 @@ struct CartView: View {
                     .buttonStyle(OasisPrimaryButtonStyle())
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
-                    .background(.thinMaterial)
+                    .background(.ultraThinMaterial)
                 }
             }
         }

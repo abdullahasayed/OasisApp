@@ -7,10 +7,20 @@ struct CheckoutView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                Text("Checkout")
-                    .font(.system(size: 26, weight: .black, design: .default))
-                    .foregroundStyle(Color.oasisInk)
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Checkout")
+                        .font(.system(size: 28, weight: .black, design: .default))
+                        .foregroundStyle(Color.oasisInk)
+                    Text("Pickup orders require full name and phone.")
+                        .font(.system(size: 14, weight: .medium, design: .default))
+                        .foregroundStyle(Color.oasisMutedInk)
+                    HStack(spacing: 10) {
+                        OasisStatusBadge(title: "\(appState.cartItems.count) Line Items", tint: .oasisRoyalBlue)
+                        OasisStatusBadge(title: appState.estimatedCartTotalCents.usd, tint: .oasisJungleGreen)
+                    }
+                }
+                .oasisCard(prominence: 1.2)
 
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Customer Details")
@@ -24,7 +34,7 @@ struct CheckoutView: View {
                         .keyboardType(.phonePad)
                         .oasisInputField()
                 }
-                .oasisCard()
+                .oasisCard(prominence: 1.05)
 
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Pickup Slot")
@@ -55,7 +65,7 @@ struct CheckoutView: View {
                         }
                     }
                 }
-                .oasisCard()
+                .oasisCard(prominence: 1.05)
 
                 Button {
                     Task {
@@ -80,28 +90,27 @@ struct CheckoutView: View {
                     Text(error)
                         .font(.system(size: 14, weight: .semibold, design: .default))
                         .foregroundStyle(Color.oasisRed)
-                        .oasisCard()
+                        .oasisCard(prominence: 1.05)
                 }
 
                 if let order = viewModel.createdOrder {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Order Confirmed")
-                            .font(.system(size: 16, weight: .semibold, design: .default))
-                            .foregroundStyle(Color.oasisJungleGreen)
+                        OasisStatusBadge(title: "Order Confirmed", tint: .oasisJungleGreen)
 
                         Text(order.orderNumber)
-                            .font(.system(size: 32, weight: .black, design: .default))
-                            .foregroundStyle(Color.oasisInk)
+                            .font(.system(size: 34, weight: .black, design: .default))
+                            .foregroundStyle(Color.oasisRed)
 
                         Text(viewModel.customerName.uppercased())
                             .font(.system(size: 20, weight: .bold, design: .default))
+                            .foregroundStyle(Color.oasisInk)
 
                         Text("Estimated total: \(order.estimatedTotalCents.usd)")
                             .font(.system(size: 15, weight: .medium, design: .default))
                             .foregroundStyle(Color.oasisMutedInk)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .oasisCard()
+                    .oasisCard(prominence: 1.25)
                 }
             }
             .padding(.horizontal, 4)

@@ -14,9 +14,13 @@ struct ProductDetailView: View {
         Int((Double(product.priceCents) * quantity).rounded())
     }
 
+    private var stockLabel: String {
+        String(format: "%.1f in stock", product.stockQuantity)
+    }
+
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 18) {
                 OasisRemoteImage(url: product.imageUrl) {
                     ZStack {
                         LinearGradient(
@@ -32,26 +36,30 @@ struct ProductDetailView: View {
                             .foregroundStyle(.white)
                     }
                 }
-                .frame(height: 260)
+                .frame(height: 270)
                 .frame(maxWidth: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .overlay(alignment: .bottomLeading) {
+                    OasisStatusBadge(title: product.category.displayName, tint: product.category.categoryTint)
+                        .padding(12)
+                }
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text(product.name)
                         .font(.system(size: 28, weight: .black, design: .default))
                         .foregroundStyle(Color.oasisInk)
                     Text(product.description)
-                        .font(.system(size: 15, weight: .regular, design: .default))
+                        .font(.system(size: 15, weight: .medium, design: .default))
                         .foregroundStyle(Color.oasisMutedInk)
                     HStack {
-                        OasisStatusBadge(title: product.category.displayName, tint: product.category.categoryTint)
+                        OasisStatusBadge(title: stockLabel, tint: .oasisJungleGreen)
                         Spacer()
                         Text(product.priceLabel)
-                            .font(.system(size: 18, weight: .bold, design: .default))
+                            .font(.system(size: 19, weight: .bold, design: .default))
                             .foregroundStyle(product.category.categoryTint)
                     }
                 }
-                .oasisCard()
+                .oasisCard(prominence: 1.15)
 
                 VStack(alignment: .leading, spacing: 10) {
                     Text(product.unit == .lb ? "Estimated Weight" : "Quantity")
@@ -90,7 +98,7 @@ struct ProductDetailView: View {
                         .font(.system(size: 14, weight: .semibold, design: .default))
                         .foregroundStyle(Color.oasisJungleGreen)
                 }
-                .oasisCard()
+                .oasisCard(prominence: 1.1)
 
                 Button {
                     appState.addToCart(product: product, quantity: quantity)
@@ -100,7 +108,7 @@ struct ProductDetailView: View {
                 .buttonStyle(OasisPrimaryButtonStyle())
             }
             .padding(.horizontal, 4)
-            .padding(.bottom, 24)
+            .padding(.bottom, 28)
         }
         .scrollIndicators(.hidden)
         .navigationTitle(product.name)

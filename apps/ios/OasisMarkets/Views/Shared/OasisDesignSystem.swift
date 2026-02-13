@@ -1,65 +1,100 @@
 import SwiftUI
 
 extension Color {
-    static let oasisRed = Color(red: 0.92, green: 0.07, blue: 0.07)
-    static let oasisJungleGreen = Color(red: 0.12, green: 0.50, blue: 0.35)
+    static let oasisRed = Color(red: 0.91, green: 0.08, blue: 0.08)
+    static let oasisJungleGreen = Color(red: 0.06, green: 0.46, blue: 0.35)
     static let oasisRoyalBlue = Color(red: 0.25, green: 0.41, blue: 0.88)
-    static let oasisCream = Color(red: 0.97, green: 0.98, blue: 0.96)
-    static let oasisPaper = Color.white
-    static let oasisInk = Color(red: 0.10, green: 0.12, blue: 0.16)
-    static let oasisMutedInk = Color(red: 0.37, green: 0.40, blue: 0.46)
+    static let oasisCream = Color(red: 0.96, green: 0.97, blue: 0.95)
+    static let oasisPaper = Color(red: 0.995, green: 0.997, blue: 1.0)
+    static let oasisPaperTint = Color(red: 0.95, green: 0.97, blue: 1.0)
+    static let oasisInk = Color(red: 0.08, green: 0.11, blue: 0.16)
+    static let oasisMutedInk = Color(red: 0.34, green: 0.39, blue: 0.47)
 }
 
 struct OasisBackgroundView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [.oasisCream, .white, Color.oasisRoyalBlue.opacity(0.08)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
+                colors: [
+                    Color.oasisCream,
+                    Color.oasisPaper,
+                    Color.oasisPaperTint.opacity(0.9)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
             )
 
             Circle()
-                .fill(Color.oasisRed.opacity(0.14))
-                .frame(width: 280, height: 280)
-                .blur(radius: 12)
-                .offset(x: 140, y: -320)
+                .fill(Color.oasisRed.opacity(0.17))
+                .frame(width: 320, height: 320)
+                .blur(radius: 22)
+                .offset(x: 150, y: -330)
 
             Circle()
-                .fill(Color.oasisJungleGreen.opacity(0.16))
-                .frame(width: 320, height: 320)
-                .blur(radius: 14)
-                .offset(x: -160, y: 280)
+                .fill(Color.oasisJungleGreen.opacity(0.18))
+                .frame(width: 350, height: 350)
+                .blur(radius: 22)
+                .offset(x: -170, y: 290)
 
             RoundedRectangle(cornerRadius: 48, style: .continuous)
-                .fill(Color.oasisRoyalBlue.opacity(0.10))
-                .frame(width: 300, height: 140)
-                .blur(radius: 10)
-                .rotationEffect(.degrees(-15))
-                .offset(x: 120, y: 340)
+                .fill(Color.oasisRoyalBlue.opacity(0.16))
+                .frame(width: 340, height: 160)
+                .blur(radius: 20)
+                .rotationEffect(.degrees(-13))
+                .offset(x: 130, y: 360)
+
+            RoundedRectangle(cornerRadius: 42, style: .continuous)
+                .fill(Color.oasisRoyalBlue.opacity(0.08))
+                .frame(width: 300, height: 120)
+                .blur(radius: 16)
+                .rotationEffect(.degrees(8))
+                .offset(x: -160, y: -300)
         }
     }
 }
 
 struct OasisCardModifier: ViewModifier {
+    let prominence: CGFloat
+
     func body(content: Content) -> some View {
         content
             .padding(14)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.oasisPaper.opacity(0.94))
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.oasisPaper.opacity(0.98),
+                                Color.white.opacity(0.95)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .overlay(
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .stroke(Color.oasisRoyalBlue.opacity(0.08), lineWidth: 1)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        Color.oasisRoyalBlue.opacity(0.20 * prominence),
+                                        Color.oasisJungleGreen.opacity(0.12 * prominence),
+                                        Color.oasisRed.opacity(0.08 * prominence)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
                     )
-                    .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
+                    .shadow(color: Color.black.opacity(0.07), radius: 16, x: 0, y: 9)
+                    .shadow(color: Color.oasisRoyalBlue.opacity(0.08), radius: 22, x: 0, y: 12)
             )
     }
 }
 
 extension View {
-    func oasisCard() -> some View {
-        modifier(OasisCardModifier())
+    func oasisCard(prominence: CGFloat = 1) -> some View {
+        modifier(OasisCardModifier(prominence: prominence))
     }
 
     func oasisInputField() -> some View {
@@ -67,10 +102,16 @@ extension View {
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color.white.opacity(0.95))
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.98), Color.oasisPaperTint.opacity(0.45)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .overlay(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .stroke(Color.oasisRoyalBlue.opacity(0.18), lineWidth: 1)
+                            .stroke(Color.oasisRoyalBlue.opacity(0.26), lineWidth: 1)
                     )
             )
     }
@@ -85,14 +126,15 @@ struct OasisPrimaryButtonStyle: ButtonStyle {
             .padding(.vertical, 12)
             .background(
                 LinearGradient(
-                    colors: [.oasisRed, .oasisRoyalBlue],
+                    colors: [.oasisRed, .oasisRoyalBlue, .oasisJungleGreen],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
             )
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .shadow(color: Color.oasisRoyalBlue.opacity(0.35), radius: 10, x: 0, y: 5)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-            .opacity(configuration.isPressed ? 0.92 : 1)
+            .opacity(configuration.isPressed ? 0.90 : 1)
     }
 }
 
@@ -105,13 +147,20 @@ struct OasisSecondaryButtonStyle: ButtonStyle {
             .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.white.opacity(0.9))
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.95), Color.oasisPaperTint.opacity(0.45)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color.oasisRoyalBlue.opacity(0.22), lineWidth: 1)
+                            .stroke(Color.oasisRoyalBlue.opacity(0.26), lineWidth: 1)
                     )
             )
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .opacity(configuration.isPressed ? 0.9 : 1)
     }
 }
 
@@ -130,12 +179,15 @@ struct OasisCategoryPill: View {
                     .fill(
                         isSelected
                             ? LinearGradient(
-                                colors: [.oasisJungleGreen, .oasisRoyalBlue],
+                                colors: [.oasisJungleGreen, .oasisRoyalBlue, .oasisRed.opacity(0.7)],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                             : LinearGradient(
-                                colors: [Color.white.opacity(0.9), Color.white.opacity(0.9)],
+                                colors: [
+                                    Color.white.opacity(0.95),
+                                    Color.oasisPaperTint.opacity(0.5)
+                                ],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -147,6 +199,12 @@ struct OasisCategoryPill: View {
                                 lineWidth: 1
                             )
                     )
+            )
+            .shadow(
+                color: isSelected ? Color.oasisRoyalBlue.opacity(0.25) : Color.clear,
+                radius: 6,
+                x: 0,
+                y: 3
             )
     }
 }

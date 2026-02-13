@@ -7,10 +7,17 @@ struct AdminOrdersView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Order Operations")
-                    .font(.system(size: 22, weight: .bold, design: .default))
-                    .foregroundStyle(Color.oasisInk)
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Order Operations")
+                        .font(.system(size: 24, weight: .black, design: .default))
+                        .foregroundStyle(Color.oasisInk)
+                    Text("Manage lifecycle states, refunds, and fulfillment receipts.")
+                        .font(.system(size: 14, weight: .medium, design: .default))
+                        .foregroundStyle(Color.oasisMutedInk)
+                    OasisStatusBadge(title: "\(viewModel.orders.count) Orders", tint: .oasisRoyalBlue)
+                }
+                .oasisCard(prominence: 1.2)
 
                 Menu {
                     Button("All") {
@@ -34,17 +41,18 @@ struct AdminOrdersView: View {
                     .foregroundStyle(Color.oasisInk)
                     .oasisInputField()
                 }
+                .oasisCard(prominence: 1.05)
 
                 if viewModel.isLoading {
                     ProgressView("Loading orders...")
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 30)
-                        .oasisCard()
+                        .oasisCard(prominence: 1.05)
                 } else if let error = viewModel.errorMessage {
                     Text(error)
                         .font(.system(size: 14, weight: .semibold, design: .default))
                         .foregroundStyle(Color.oasisRed)
-                        .oasisCard()
+                        .oasisCard(prominence: 1.05)
                 } else if viewModel.orders.isEmpty {
                     ContentUnavailableView(
                         "No orders",
@@ -53,9 +61,9 @@ struct AdminOrdersView: View {
                     )
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 24)
-                    .oasisCard()
+                    .oasisCard(prominence: 1.05)
                 } else {
-                    LazyVStack(spacing: 12) {
+                    LazyVStack(spacing: 14) {
                         ForEach(viewModel.orders) { order in
                             AdminOrderCard(
                                 order: order,
@@ -95,6 +103,7 @@ struct AdminOrdersView: View {
                 if let receiptURL = viewModel.lastReceiptURL {
                     Link("Open Latest Receipt", destination: receiptURL)
                         .font(.system(size: 14, weight: .semibold, design: .default))
+                        .foregroundStyle(Color.oasisRoyalBlue)
                         .padding(.top, 4)
                 }
             }
@@ -117,12 +126,12 @@ private struct AdminOrderCard: View {
     let onRefund: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(order.orderNumber)
                         .font(.system(size: 20, weight: .black, design: .default))
-                        .foregroundStyle(Color.oasisInk)
+                        .foregroundStyle(Color.oasisRed)
                     Text(order.customerName.uppercased())
                         .font(.system(size: 13, weight: .bold, design: .default))
                         .foregroundStyle(Color.oasisMutedInk)
@@ -168,7 +177,7 @@ private struct AdminOrderCard: View {
                 }
             }
         }
-        .oasisCard()
+        .oasisCard(prominence: 1.1)
     }
 
     private func actionButton(_ title: String, action: @escaping () -> Void) -> some View {

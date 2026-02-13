@@ -6,10 +6,16 @@ struct OrderLookupView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                Text("Track Your Pickup")
-                    .font(.system(size: 22, weight: .bold, design: .default))
-                    .foregroundStyle(Color.oasisInk)
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Track Your Pickup")
+                        .font(.system(size: 24, weight: .black, design: .default))
+                        .foregroundStyle(Color.oasisInk)
+                    Text("Enter order number and phone to check your live status.")
+                        .font(.system(size: 14, weight: .medium, design: .default))
+                        .foregroundStyle(Color.oasisMutedInk)
+                }
+                .oasisCard(prominence: 1.2)
 
                 VStack(alignment: .leading, spacing: 10) {
                     TextField("Order Number", text: $viewModel.orderNumber)
@@ -27,20 +33,21 @@ struct OrderLookupView: View {
                     }
                     .buttonStyle(OasisPrimaryButtonStyle())
                 }
-                .oasisCard()
+                .oasisCard(prominence: 1.05)
 
                 if let result = viewModel.result {
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 12) {
                         HStack {
                             Text(result.orderNumber)
-                                .font(.system(size: 26, weight: .black, design: .default))
-                                .foregroundStyle(Color.oasisInk)
+                                .font(.system(size: 28, weight: .black, design: .default))
+                                .foregroundStyle(Color.oasisRed)
                             Spacer()
                             OasisStatusBadge(title: result.status.displayName, tint: result.status.statusTint)
                         }
 
                         Text(result.customerName.uppercased())
                             .font(.system(size: 18, weight: .bold, design: .default))
+                            .foregroundStyle(Color.oasisInk)
 
                         Text(result.pickupWindowLabel)
                             .font(.system(size: 14, weight: .medium, design: .default))
@@ -53,25 +60,27 @@ struct OrderLookupView: View {
                         if let finalTotal = result.finalTotalCents {
                             Text("Final total: \(finalTotal.usd)")
                                 .font(.system(size: 14, weight: .semibold, design: .default))
+                                .foregroundStyle(Color.oasisRoyalBlue)
                         }
 
                         if let receipt = result.receiptUrl {
                             Link("Open Receipt", destination: receipt)
                                 .font(.system(size: 14, weight: .semibold, design: .default))
+                                .foregroundStyle(Color.oasisRoyalBlue)
                         }
                     }
-                    .oasisCard()
+                    .oasisCard(prominence: 1.2)
                 }
 
                 if let error = viewModel.errorMessage {
                     Text(error)
                         .font(.system(size: 14, weight: .semibold, design: .default))
                         .foregroundStyle(Color.oasisRed)
-                        .oasisCard()
+                        .oasisCard(prominence: 1.05)
                 }
             }
             .padding(.horizontal, 4)
-            .padding(.bottom, 20)
+            .padding(.bottom, 24)
         }
         .scrollIndicators(.hidden)
         .animation(.easeInOut(duration: 0.22), value: viewModel.result?.id)

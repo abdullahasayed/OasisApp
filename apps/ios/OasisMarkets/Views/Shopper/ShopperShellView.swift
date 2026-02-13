@@ -21,7 +21,9 @@ struct ShopperShellView: View {
                     Label("Track", systemImage: "clock.arrow.circlepath")
                 }
         }
-        .toolbarBackground(Color.white.opacity(0.92), for: .tabBar)
+        .toolbarBackground(Color.white.opacity(0.95), for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
+        .toolbarColorScheme(.light, for: .tabBar)
+        .tint(.oasisRoyalBlue)
     }
 }

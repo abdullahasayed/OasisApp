@@ -10,28 +10,35 @@ struct RootView: View {
                 OasisBackgroundView()
                     .ignoresSafeArea()
 
-                VStack(alignment: .leading, spacing: 14) {
-                    HStack(alignment: .top) {
-                        OasisWordmarkView()
-                        Spacer()
+                VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        HStack(alignment: .top) {
+                            OasisWordmarkView()
+                            Spacer()
 
-                        VStack(alignment: .trailing, spacing: 6) {
-                            if appState.appMode == .shopper {
+                            VStack(alignment: .trailing, spacing: 6) {
+                                if appState.appMode == .shopper {
+                                    OasisStatusBadge(
+                                        title: "Cart \(appState.cartItems.count)",
+                                        tint: .oasisRoyalBlue
+                                    )
+                                } else {
+                                    OasisStatusBadge(title: "Admin", tint: .oasisJungleGreen)
+                                }
+
                                 OasisStatusBadge(
-                                    title: "Cart \(appState.cartItems.count)",
-                                    tint: .oasisRoyalBlue
+                                    title: apiClient.isDemoMode ? "Demo Data" : "Live API",
+                                    tint: apiClient.isDemoMode ? .oasisJungleGreen : .oasisRoyalBlue
                                 )
-                            } else {
-                                OasisStatusBadge(title: "Admin", tint: .oasisJungleGreen)
                             }
-
-                            OasisStatusBadge(
-                                title: apiClient.isDemoMode ? "Demo Data" : "Live API",
-                                tint: apiClient.isDemoMode ? .oasisJungleGreen : .oasisRoyalBlue
-                            )
                         }
+
+                        Text("Halal meat pickup and fresh groceries in one seamless order flow.")
+                            .font(.system(size: 13, weight: .medium, design: .default))
+                            .foregroundStyle(Color.oasisMutedInk)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .padding(.horizontal, 4)
+                    .oasisCard(prominence: 1.2)
 
                     OasisModeToggle(
                         isShopperMode: appState.appMode == .shopper,
@@ -49,28 +56,34 @@ struct RootView: View {
                             AdminDashboardView()
                         }
                     }
-                    .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                    Toggle(isOn: Binding(
-                        get: { apiClient.isDemoMode },
-                        set: {
-                            let previous = apiClient.isDemoMode
-                            apiClient.setDemoMode($0)
+                    HStack(spacing: 10) {
+                        Image(systemName: apiClient.isDemoMode ? "shippingbox.fill" : "network")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(apiClient.isDemoMode ? Color.oasisJungleGreen : Color.oasisRoyalBlue)
 
-                            if previous != $0 {
-                                appState.adminAccessToken = nil
-                                appState.adminRefreshToken = nil
-                                appState.appMode = .shopper
+                        Toggle(isOn: Binding(
+                            get: { apiClient.isDemoMode },
+                            set: {
+                                let previous = apiClient.isDemoMode
+                                apiClient.setDemoMode($0)
+
+                                if previous != $0 {
+                                    appState.adminAccessToken = nil
+                                    appState.adminRefreshToken = nil
+                                    appState.appMode = .shopper
+                                }
                             }
+                        )) {
+                            Text("Use Demo Data (No Backend Required)")
+                                .font(.system(size: 13, weight: .semibold, design: .default))
+                                .foregroundStyle(Color.oasisInk)
                         }
-                    )) {
-                        Text("Use Demo Data (No Backend Required)")
-                            .font(.system(size: 13, weight: .semibold, design: .default))
-                            .foregroundStyle(Color.oasisInk)
+                        .tint(.oasisJungleGreen)
                     }
-                    .tint(.oasisJungleGreen)
-                    .padding(.horizontal, 2)
+                    .oasisCard()
                 }
                 .padding(16)
             }

@@ -7,8 +7,14 @@ struct OasisWordmarkView: View {
         VStack(alignment: .leading, spacing: compact ? 2 : 4) {
             Text("OASIS")
                 .font(.system(size: compact ? 26 : 36, weight: .black, design: .default))
-                .kerning(1.8)
-                .foregroundStyle(Color.oasisRed)
+                .kerning(compact ? 1.6 : 2.1)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [.oasisRed, .oasisRed.opacity(0.8), .oasisRoyalBlue.opacity(0.86)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
 
             HStack(spacing: 6) {
                 Text("International")
@@ -18,6 +24,7 @@ struct OasisWordmarkView: View {
             }
             .font(.system(size: compact ? 14 : 16, weight: .semibold, design: .default))
         }
+        .padding(.vertical, compact ? 2 : 0)
         .textCase(.none)
     }
 }
@@ -42,6 +49,15 @@ struct OasisModeToggle: View {
                 isSelected: !isShopperMode
             )
         }
+        .padding(4)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.82))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color.oasisRoyalBlue.opacity(0.20), lineWidth: 1)
+                )
+        )
     }
 
     private func modeButton(
@@ -68,7 +84,7 @@ struct OasisModeToggle: View {
                     .fill(
                         isSelected
                             ? LinearGradient(
-                                colors: [.oasisRed, .oasisRoyalBlue],
+                                colors: [.oasisRed, .oasisRoyalBlue, .oasisJungleGreen.opacity(0.85)],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -78,6 +94,12 @@ struct OasisModeToggle: View {
                                 endPoint: .trailing
                             )
                     )
+            )
+            .shadow(
+                color: isSelected ? Color.oasisRoyalBlue.opacity(0.22) : Color.clear,
+                radius: 8,
+                x: 0,
+                y: 4
             )
         }
         .buttonStyle(.plain)
@@ -89,14 +111,23 @@ struct OasisStatusBadge: View {
     let tint: Color
 
     var body: some View {
-        Text(title)
-            .font(.system(size: 12, weight: .semibold, design: .default))
-            .foregroundStyle(tint)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(
-                Capsule()
-                    .fill(tint.opacity(0.12))
-            )
+        HStack(spacing: 6) {
+            Circle()
+                .fill(tint)
+                .frame(width: 7, height: 7)
+            Text(title)
+                .font(.system(size: 12, weight: .semibold, design: .default))
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(
+            Capsule()
+                .fill(tint.opacity(0.12))
+                .overlay(
+                    Capsule()
+                        .stroke(tint.opacity(0.18), lineWidth: 1)
+                )
+        )
     }
 }

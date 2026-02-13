@@ -7,42 +7,46 @@ struct CatalogView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                Text("Fresh picks for pickup")
-                    .font(.system(size: 22, weight: .bold, design: .default))
-                    .foregroundStyle(Color.oasisInk)
+            VStack(alignment: .leading, spacing: 16) {
+                CatalogHeroCard(
+                    productCount: viewModel.products.count,
+                    selectedCategory: viewModel.selectedCategory
+                )
 
-                Text("Halal meats, produce, and everyday essentials.")
-                    .font(.system(size: 14, weight: .regular, design: .default))
-                    .foregroundStyle(Color.oasisMutedInk)
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Browse Categories")
+                        .font(.system(size: 13, weight: .semibold, design: .default))
+                        .foregroundStyle(Color.oasisMutedInk)
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
-                        Button {
-                            viewModel.selectedCategory = nil
-                            Task { await viewModel.load(apiClient: apiClient) }
-                        } label: {
-                            OasisCategoryPill(
-                                title: "All",
-                                isSelected: viewModel.selectedCategory == nil
-                            )
-                        }
-                        .buttonStyle(.plain)
-
-                        ForEach(ProductCategory.allCases) { category in
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
                             Button {
-                                viewModel.selectedCategory = category
+                                viewModel.selectedCategory = nil
                                 Task { await viewModel.load(apiClient: apiClient) }
                             } label: {
                                 OasisCategoryPill(
-                                    title: category.displayName,
-                                    isSelected: viewModel.selectedCategory == category
+                                    title: "All",
+                                    isSelected: viewModel.selectedCategory == nil
                                 )
                             }
                             .buttonStyle(.plain)
+
+                            ForEach(ProductCategory.allCases) { category in
+                                Button {
+                                    viewModel.selectedCategory = category
+                                    Task { await viewModel.load(apiClient: apiClient) }
+                                } label: {
+                                    OasisCategoryPill(
+                                        title: category.displayName,
+                                        isSelected: viewModel.selectedCategory == category
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
                     }
                 }
+                .oasisCard()
 
                 if viewModel.isLoading {
                     ProgressView("Loading catalog...")
@@ -68,7 +72,7 @@ struct CatalogView: View {
                     .padding(.vertical, 24)
                     .oasisCard()
                 } else {
-                    LazyVStack(spacing: 12) {
+                    LazyVStack(spacing: 14) {
                         ForEach(viewModel.products) { product in
                             ProductCatalogCard(
                                 product: product,
@@ -81,7 +85,7 @@ struct CatalogView: View {
                 }
             }
             .padding(.horizontal, 4)
-            .padding(.bottom, 20)
+            .padding(.bottom, 26)
         }
         .scrollIndicators(.hidden)
         .task {
@@ -106,12 +110,53 @@ struct CatalogView: View {
     }
 }
 
+private struct CatalogHeroCard: View {
+    let productCount: Int
+    let selectedCategory: ProductCategory?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Fresh picks for pickup")
+                        .font(.system(size: 24, weight: .black, design: .default))
+                        .foregroundStyle(Color.oasisInk)
+
+                    Text("Halal meats, produce, and everyday essentials.")
+                        .font(.system(size: 14, weight: .medium, design: .default))
+                        .foregroundStyle(Color.oasisMutedInk)
+                }
+
+                Spacer(minLength: 8)
+
+                ZStack {
+                    Circle()
+                        .fill(Color.oasisRoyalBlue.opacity(0.14))
+                        .frame(width: 64, height: 64)
+                    Image(systemName: "basket.fill")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(Color.oasisRoyalBlue)
+                }
+            }
+
+            HStack(spacing: 12) {
+                OasisStatusBadge(title: "\(productCount) Items", tint: .oasisJungleGreen)
+                OasisStatusBadge(
+                    title: selectedCategory?.displayName ?? "All Categories",
+                    tint: selectedCategory?.categoryTint ?? .oasisRoyalBlue
+                )
+            }
+        }
+        .oasisCard(prominence: 1.2)
+    }
+}
+
 private struct ProductCatalogCard: View {
     let product: Product
     let onAdd: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             OasisRemoteImage(url: product.imageUrl) {
                 ZStack {
                     LinearGradient(
@@ -127,53 +172,44 @@ private struct ProductCatalogCard: View {
                         .foregroundStyle(.white)
                 }
             }
-            .frame(width: 82, height: 82)
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .frame(width: 92, height: 96)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
             VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(product.name)
-                            .font(.system(size: 16, weight: .semibold, design: .default))
-                            .foregroundStyle(Color.oasisInk)
-                            .lineLimit(2)
+                Text(product.name)
+                    .font(.system(size: 17, weight: .bold, design: .default))
+                    .foregroundStyle(Color.oasisInk)
+                    .lineLimit(2)
 
-                        Text(product.priceLabel)
-                            .font(.system(size: 14, weight: .bold, design: .default))
-                            .foregroundStyle(product.category.categoryTint)
-                    }
-
-                    Spacer(minLength: 8)
-
-                    VStack(spacing: 8) {
-                        Button("Add") {
-                            onAdd()
-                        }
-                        .buttonStyle(OasisSecondaryButtonStyle())
-
-                        NavigationLink {
-                            ProductDetailView(product: product)
-                        } label: {
-                            Text("Details")
-                        }
-                        .buttonStyle(OasisSecondaryButtonStyle())
-                    }
-                }
+                Text(product.priceLabel)
+                    .font(.system(size: 14, weight: .bold, design: .default))
+                    .foregroundStyle(product.category.categoryTint)
 
                 Text(product.description)
                     .font(.system(size: 13, weight: .regular, design: .default))
                     .foregroundStyle(Color.oasisMutedInk)
                     .lineLimit(2)
 
-                HStack {
+                HStack(alignment: .center) {
                     OasisStatusBadge(title: product.category.displayName, tint: product.category.categoryTint)
                     Spacer()
                     Text("Stock \(product.stockQuantity, specifier: "%.1f")")
-                        .font(.system(size: 11, weight: .medium, design: .default))
-                        .foregroundStyle(Color.oasisMutedInk)
+                        .font(.system(size: 11, weight: .semibold, design: .default))
+                        .foregroundStyle(product.stockQuantity > 5 ? Color.oasisJungleGreen : Color.oasisRed)
+                }
+
+                HStack(spacing: 8) {
+                    Button("Add", action: onAdd)
+                        .buttonStyle(OasisSecondaryButtonStyle())
+                    NavigationLink {
+                        ProductDetailView(product: product)
+                    } label: {
+                        Text("Details")
+                    }
+                    .buttonStyle(OasisSecondaryButtonStyle())
                 }
             }
         }
-        .oasisCard()
+        .oasisCard(prominence: 1.1)
     }
 }

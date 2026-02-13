@@ -15,14 +15,18 @@ struct AdminDashboardView: View {
                     Label("Orders", systemImage: "list.bullet.rectangle.portrait.fill")
                 }
         }
-        .toolbarBackground(Color.white.opacity(0.92), for: .tabBar)
+        .toolbarBackground(Color.white.opacity(0.95), for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
+        .toolbarColorScheme(.light, for: .tabBar)
+        .tint(.oasisRoyalBlue)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Sign Out") {
+                Button {
                     appState.adminAccessToken = nil
                     appState.adminRefreshToken = nil
                     appState.appMode = .shopper
+                } label: {
+                    Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
                 }
                 .font(.system(size: 14, weight: .semibold, design: .default))
                 .foregroundStyle(Color.oasisRed)

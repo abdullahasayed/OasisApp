@@ -7,21 +7,28 @@ struct AdminInventoryView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Inventory Management")
-                    .font(.system(size: 22, weight: .bold, design: .default))
-                    .foregroundStyle(Color.oasisInk)
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Inventory Management")
+                        .font(.system(size: 24, weight: .black, design: .default))
+                        .foregroundStyle(Color.oasisInk)
+                    Text("Keep stock accurate for shopper pickup ordering.")
+                        .font(.system(size: 14, weight: .medium, design: .default))
+                        .foregroundStyle(Color.oasisMutedInk)
+                    OasisStatusBadge(title: "\(viewModel.products.count) Active Products", tint: .oasisRoyalBlue)
+                }
+                .oasisCard(prominence: 1.2)
 
                 if viewModel.isLoading {
                     ProgressView("Loading inventory...")
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 30)
-                        .oasisCard()
+                        .oasisCard(prominence: 1.05)
                 } else if let error = viewModel.errorMessage {
                     Text(error)
                         .font(.system(size: 14, weight: .semibold, design: .default))
                         .foregroundStyle(Color.oasisRed)
-                        .oasisCard()
+                        .oasisCard(prominence: 1.05)
                 } else if viewModel.products.isEmpty {
                     ContentUnavailableView(
                         "No products",
@@ -30,9 +37,9 @@ struct AdminInventoryView: View {
                     )
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 24)
-                    .oasisCard()
+                    .oasisCard(prominence: 1.05)
                 } else {
-                    LazyVStack(spacing: 12) {
+                    LazyVStack(spacing: 14) {
                         ForEach(viewModel.products) { product in
                             AdminInventoryRow(
                                 product: product,
@@ -78,6 +85,24 @@ private struct AdminInventoryRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top) {
+                OasisRemoteImage(url: product.imageUrl) {
+                    ZStack {
+                        LinearGradient(
+                            colors: [
+                                product.category.categoryTint.opacity(0.55),
+                                product.category.categoryTint.opacity(0.20)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        Image(systemName: product.category.symbolName)
+                            .font(.system(size: 18))
+                            .foregroundStyle(.white)
+                    }
+                }
+                .frame(width: 56, height: 56)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text(product.name)
                         .font(.system(size: 16, weight: .semibold, design: .default))
@@ -86,6 +111,7 @@ private struct AdminInventoryRow: View {
                         .font(.system(size: 14, weight: .bold, design: .default))
                         .foregroundStyle(product.category.categoryTint)
                 }
+
                 Spacer()
                 OasisStatusBadge(title: product.category.displayName, tint: product.category.categoryTint)
             }
@@ -101,6 +127,6 @@ private struct AdminInventoryRow: View {
             }
             .buttonStyle(OasisPrimaryButtonStyle())
         }
-        .oasisCard()
+        .oasisCard(prominence: 1.08)
     }
 }
