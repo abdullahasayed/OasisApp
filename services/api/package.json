@@ -11,6 +11,8 @@
     "start": "node dist/server.js",
     "migrate": "tsx src/db/migrate.ts",
     "seed:admin": "tsx src/db/seedSuperadmin.ts",
+    "inventory:export": "tsx src/tools/exportInventoryCsv.ts",
+    "inventory:import": "tsx src/tools/importInventoryCsv.ts",
     "test": "vitest run",
     "lint": "tsc -p tsconfig.json --noEmit"
   },

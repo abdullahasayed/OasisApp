@@ -19,6 +19,7 @@ export interface DbProduct {
   stockQuantity: number;
   imageKey: string;
   imageUrl: string;
+  searchKeywords: string[];
   active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -101,6 +102,9 @@ const mapProduct = (row: Record<string, unknown>): DbProduct => ({
   stockQuantity: Number(row.stock_quantity),
   imageKey: row.image_key as string,
   imageUrl: row.image_url as string,
+  searchKeywords: Array.isArray(row.search_keywords)
+    ? row.search_keywords.map((value) => String(value))
+    : [],
   active: Boolean(row.active),
   createdAt: (row.created_at as Date).toISOString(),
   updatedAt: (row.updated_at as Date).toISOString()
@@ -283,23 +287,78 @@ export const upsertPickupDayRange = async (
   };
 };
 
-export const listCatalogProducts = async (
-  category?: ProductCategory
-): Promise<DbProduct[]> => {
-  const result = category
-    ? await query<Record<string, unknown>>(
-        `SELECT *
-         FROM products
-         WHERE active = TRUE AND stock_quantity > 0 AND category = $1
-         ORDER BY name ASC`,
-        [category]
-      )
-    : await query<Record<string, unknown>>(
-        `SELECT *
-         FROM products
-         WHERE active = TRUE AND stock_quantity > 0
-         ORDER BY name ASC`
-      );
+export interface CatalogProductQuery {
+  category?: ProductCategory;
+  q?: string;
+  limit?: number;
+}
+
+export const listCatalogProducts = async ({
+  category,
+  q,
+  limit = 100
+}: CatalogProductQuery = {}): Promise<DbProduct[]> => {
+  const normalizedQuery = q?.trim() ?? "";
+  const queryLimit = Math.max(1, Math.min(200, Math.trunc(limit)));
+
+  if (!normalizedQuery) {
+    const result = category
+      ? await query<Record<string, unknown>>(
+          `SELECT *
+           FROM products
+           WHERE active = TRUE
+             AND stock_quantity > 0
+             AND category = $1
+           ORDER BY name ASC
+           LIMIT $2`,
+          [category, queryLimit]
+        )
+      : await query<Record<string, unknown>>(
+          `SELECT *
+           FROM products
+           WHERE active = TRUE
+             AND stock_quantity > 0
+           ORDER BY name ASC
+           LIMIT $1`,
+          [queryLimit]
+        );
+
+    return result.rows.map(mapProduct);
+  }
+
+  const wildcard = `%${normalizedQuery}%`;
+  const result = await query<Record<string, unknown>>(
+    `WITH search_source AS (
+       SELECT
+         p.*,
+         COALESCE(array_to_string(p.search_keywords, ' '), '') AS keywords_text,
+         setweight(to_tsvector('simple', COALESCE(p.name, '')), 'A')
+         || setweight(to_tsvector('simple', COALESCE(array_to_string(p.search_keywords, ' '), '')), 'B')
+         || setweight(to_tsvector('simple', COALESCE(p.description, '')), 'C') AS search_document,
+         plainto_tsquery('simple', $1) AS query_terms
+       FROM products p
+       WHERE p.active = TRUE
+         AND p.stock_quantity > 0
+     )
+     SELECT *
+     FROM search_source
+     WHERE search_document @@ query_terms
+        OR similarity(name, $1) >= 0.18
+        OR similarity(keywords_text, $1) >= 0.14
+        OR name ILIKE $2
+        OR keywords_text ILIKE $2
+        OR description ILIKE $2
+     ORDER BY (
+       ts_rank_cd(search_document, query_terms) * 5.0
+       + GREATEST(similarity(name, $1), similarity(keywords_text, $1)) * 2.0
+       + CASE WHEN name ILIKE $2 THEN 1.2 ELSE 0 END
+       + CASE WHEN keywords_text ILIKE $2 THEN 1.5 ELSE 0 END
+       + CASE WHEN description ILIKE $2 THEN 0.5 ELSE 0 END
+     ) DESC,
+     name ASC
+     LIMIT $3`,
+    [normalizedQuery, wildcard, queryLimit]
+  );
 
   return result.rows.map(mapProduct);
 };

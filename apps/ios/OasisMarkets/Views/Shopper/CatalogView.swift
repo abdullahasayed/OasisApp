@@ -21,8 +21,7 @@ struct CatalogView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
                             Button {
-                                viewModel.selectedCategory = nil
-                                Task { await viewModel.load(apiClient: apiClient) }
+                                viewModel.updateCategory(nil, apiClient: apiClient)
                             } label: {
                                 OasisCategoryPill(
                                     title: "All",
@@ -33,8 +32,7 @@ struct CatalogView: View {
 
                             ForEach(ProductCategory.allCases) { category in
                                 Button {
-                                    viewModel.selectedCategory = category
-                                    Task { await viewModel.load(apiClient: apiClient) }
+                                    viewModel.updateCategory(category, apiClient: apiClient)
                                 } label: {
                                     OasisCategoryPill(
                                         title: category.displayName,
@@ -45,10 +43,32 @@ struct CatalogView: View {
                             }
                         }
                     }
+
+                    HStack(spacing: 10) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundStyle(Color.oasisMutedInk)
+                        TextField("Search all items", text: $viewModel.searchQuery)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled(true)
+                        if !viewModel.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Button {
+                                viewModel.searchQuery = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(Color.oasisMutedInk)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        if viewModel.isSearching {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        }
+                    }
+                    .oasisInputField()
                 }
                 .oasisCard()
 
-                if viewModel.isLoading {
+                if viewModel.isLoading && viewModel.products.isEmpty {
                     ProgressView("Loading catalog...")
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.vertical, 32)
@@ -97,6 +117,9 @@ struct CatalogView: View {
                 await viewModel.load(apiClient: apiClient, force: true)
                 prefetchTopImages()
             }
+        }
+        .onChange(of: viewModel.searchQuery) { _, updatedQuery in
+            viewModel.updateSearchQuery(updatedQuery, apiClient: apiClient)
         }
         .onChange(of: viewModel.products.map(\.id)) {
             prefetchTopImages()

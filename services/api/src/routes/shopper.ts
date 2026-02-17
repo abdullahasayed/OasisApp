@@ -2,10 +2,10 @@ import { randomUUID } from "node:crypto";
 import { DateTime } from "luxon";
 import type { FastifyPluginAsync } from "fastify";
 import {
+  catalogQuerySchema,
   createOrderRequestSchema,
   createOrderResponseSchema,
-  lookupOrderResponseSchema,
-  productCategorySchema
+  lookupOrderResponseSchema
 } from "@oasis/contracts";
 import {
   decrementStockForOrder,
@@ -37,12 +37,17 @@ import { mapDbOrderToLookup, mapDbProductToContract } from "./mappers.js";
 
 const shopperRoutes: FastifyPluginAsync = async (app) => {
   app.get("/catalog", async (request, reply) => {
-    const categoryRaw = (request.query as { category?: string }).category;
-    const category = categoryRaw
-      ? productCategorySchema.parse(categoryRaw)
-      : undefined;
+    const parsed = catalogQuerySchema.safeParse(request.query ?? {});
+    if (!parsed.success) {
+      return reply.code(400).send({ message: parsed.error.flatten() });
+    }
 
-    const products = await listCatalogProducts(category);
+    const queryText = parsed.data.q?.trim() ?? "";
+    const products = await listCatalogProducts({
+      category: queryText ? undefined : parsed.data.category,
+      q: queryText || undefined,
+      limit: parsed.data.limit
+    });
     return reply.send({
       products: products.map(mapDbProductToContract)
     });

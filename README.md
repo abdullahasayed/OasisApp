@@ -11,6 +11,8 @@ Monorepo scaffold for the Oasis Markets pickup-ordering MVP.
 ## Core MVP capabilities implemented
 - Shopper: catalog, cart, checkout request, pickup-slot selection, order lookup, receipt retrieval
 - Admin: login, inventory CRUD, order status changes, finalize, refund, fulfill
+- Smart catalog search across all items with typo-tolerant ranking
+- Developer inventory CSV export/import workflow for Excel roundtrip editing
 - Payment adapter architecture with Stripe and mock provider
 - Storage adapter architecture with S3-compatible and local provider
 - Epson ESC/POS payload formatter for receipt printing

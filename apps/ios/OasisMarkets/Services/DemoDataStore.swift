@@ -21,6 +21,7 @@ final class DemoDataStore {
     private var orderSequence: Int
     private var dayRanges: [String: PickupRange]
     private var unavailableSlots: Set<String>
+    private var searchKeywordsByProductID: [UUID: [String]]
 
     private let taxRateBps = 825
     private let slotCapacity = 20
@@ -105,6 +106,13 @@ final class DemoDataStore {
         ]
 
         self.products = seededProducts.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        self.searchKeywordsByProductID = [
+            UUID(uuidString: "11111111-1111-1111-1111-111111111111")!: ["lamb", "halal", "chops", "grill"],
+            UUID(uuidString: "22222222-2222-2222-2222-222222222222")!: ["beef", "ground", "halal", "kofta"],
+            UUID(uuidString: "33333333-3333-3333-3333-333333333333")!: ["dates", "medjool", "snack", "ramadan"],
+            UUID(uuidString: "44444444-4444-4444-4444-444444444444")!: ["tomatoes", "roma", "produce", "fresh"],
+            UUID(uuidString: "55555555-5555-5555-5555-555555555555")!: ["apples", "honeycrisp", "fruit", "sweet"]
+        ]
         self.orderSequence = 42
 
         let seededOrderStart = calendar.date(byAdding: .hour, value: 2, to: now) ?? now
@@ -141,10 +149,44 @@ final class DemoDataStore {
         self.unavailableSlots = []
     }
 
-    func catalog(category: ProductCategory?) -> [Product] {
+    func catalog(
+        category: ProductCategory?,
+        query: String? = nil,
+        limit: Int = 100
+    ) -> [Product] {
+        let maxResults = max(1, min(200, limit))
         let visible = products.filter { $0.active && $0.stockQuantity > 0 }
-        guard let category else { return visible }
-        return visible.filter { $0.category == category }
+        let normalizedQuery = (query ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+
+        if normalizedQuery.isEmpty {
+            let filtered = category == nil
+                ? visible
+                : visible.filter { $0.category == category }
+            return Array(filtered.prefix(maxResults))
+        }
+
+        let ranked = visible
+            .compactMap { product -> (product: Product, score: Double)? in
+                let keywords = searchKeywordsByProductID[product.id] ?? []
+                let score = searchScore(
+                    query: normalizedQuery,
+                    productName: product.name,
+                    description: product.description,
+                    keywords: keywords
+                )
+                return score > 0 ? (product, score) : nil
+            }
+            .sorted { lhs, rhs in
+                if abs(lhs.score - rhs.score) > 0.0001 {
+                    return lhs.score > rhs.score
+                }
+                return lhs.product.name.localizedCaseInsensitiveCompare(rhs.product.name) == .orderedAscending
+            }
+            .map(\.product)
+
+        return Array(ranked.prefix(maxResults))
     }
 
     func pickupSlots(for date: Date) -> [PickupSlot] {
@@ -550,6 +592,97 @@ final class DemoDataStore {
 
     private static func normalizePhone(_ value: String) -> String {
         value.filter { $0.isNumber || $0 == "+" }
+    }
+
+    private func searchScore(
+        query: String,
+        productName: String,
+        description: String,
+        keywords: [String]
+    ) -> Double {
+        let normalizedName = productName.lowercased()
+        let normalizedDescription = description.lowercased()
+        let normalizedKeywords = keywords.map { $0.lowercased() }
+        let keywordsText = normalizedKeywords.joined(separator: " ")
+        let queryTokens = query
+            .split(whereSeparator: \.isWhitespace)
+            .map(String.init)
+            .filter { !$0.isEmpty }
+
+        var score = 0.0
+        if normalizedName == query {
+            score += 14
+        }
+        if normalizedName.contains(query) {
+            score += 7
+        }
+        if keywordsText.contains(query) {
+            score += 9
+        }
+        if normalizedDescription.contains(query) {
+            score += 3
+        }
+
+        for token in queryTokens {
+            if normalizedName.hasPrefix(token) {
+                score += 3
+            } else if normalizedName.contains(token) {
+                score += 1.6
+            }
+
+            if keywordsText.contains(token) {
+                score += 2.8
+            }
+
+            if normalizedDescription.contains(token) {
+                score += 0.9
+            }
+        }
+
+        score += trigramSimilarity(query, normalizedName) * 4.0
+        score += trigramSimilarity(query, keywordsText) * 4.5
+        score += trigramSimilarity(query, normalizedDescription) * 1.5
+
+        return score
+    }
+
+    private func trigramSimilarity(_ left: String, _ right: String) -> Double {
+        let leftTrigrams = trigrams(for: left)
+        let rightTrigrams = trigrams(for: right)
+        if leftTrigrams.isEmpty || rightTrigrams.isEmpty {
+            return 0
+        }
+
+        let intersection = leftTrigrams.intersection(rightTrigrams).count
+        let union = leftTrigrams.union(rightTrigrams).count
+        if union == 0 {
+            return 0
+        }
+
+        return Double(intersection) / Double(union)
+    }
+
+    private func trigrams(for value: String) -> Set<String> {
+        let normalized = value
+            .lowercased()
+            .replacingOccurrences(of: "[^a-z0-9]+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if normalized.isEmpty {
+            return []
+        }
+
+        let padded = "  \(normalized)  "
+        guard padded.count >= 3 else {
+            return [padded]
+        }
+
+        let chars = Array(padded)
+        var results = Set<String>()
+        for index in 0..<(chars.count - 2) {
+            let trigram = String(chars[index...index + 2])
+            results.insert(trigram)
+        }
+        return results
     }
 
     private static func iso(_ date: Date) -> String {

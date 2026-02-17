@@ -60,6 +60,13 @@ export const productSchema = z.object({
 });
 export type Product = z.infer<typeof productSchema>;
 
+export const catalogQuerySchema = z.object({
+  category: productCategorySchema.optional(),
+  q: z.string().trim().max(80).optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(100)
+});
+export type CatalogQuery = z.infer<typeof catalogQuerySchema>;
+
 export const catalogResponseSchema = z.object({
   products: z.array(productSchema)
 });

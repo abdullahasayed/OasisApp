@@ -6,7 +6,7 @@ Fastify service for Oasis Markets pickup orders.
 Base prefix: `/v1`
 
 ### Shopper
-- `GET /catalog?category=...`
+- `GET /catalog?category=...&q=...&limit=...`
 - `GET /products/:id`
 - `GET /pickup-slots?date=YYYY-MM-DD`
 - `POST /orders`
@@ -44,3 +44,21 @@ Base prefix: `/v1`
 On API startup, the service ensures a superadmin account exists using:
 - `SUPERADMIN_EMAIL`
 - `SUPERADMIN_PASSWORD`
+
+## Catalog Search
+- `q`: optional search text (trimmed, max 80 chars).
+- `limit`: optional result cap (1-200, default 100).
+- When `q` is provided, search runs across all categories and ignores category filtering for the base query.
+
+## Inventory CSV Roundtrip (Excel)
+- Export inventory to CSV:
+  - `npm run inventory:export --workspace @oasis/api -- --out ./inventory.csv`
+- Validate import without writes:
+  - `npm run inventory:import --workspace @oasis/api -- --in ./inventory.csv --dry-run`
+- Import with upsert-by-id:
+  - `npm run inventory:import --workspace @oasis/api -- --in ./inventory.csv`
+
+CSV header (exact order):
+- `id,name,description,category,unit,price_cents,stock_quantity,image_key,image_url,active,search_keywords`
+
+`search_keywords` is stored as pipe-delimited values (for example: `ribeye|steak|beef cut`), normalized on import, and never exposed in shopper/admin API responses.

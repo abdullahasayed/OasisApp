@@ -217,6 +217,56 @@ suite("API integration", () => {
     expect(Array.isArray(body.products)).toBe(true);
   });
 
+  it("supports smart all-items search and keeps hidden keywords out of response", async () => {
+    const suffix = Date.now();
+    await pool.query(
+      `INSERT INTO products (
+        name,
+        description,
+        category,
+        unit,
+        price_cents,
+        stock_quantity,
+        image_key,
+        image_url,
+        active,
+        search_keywords
+      ) VALUES
+      ($1, 'Fresh lemons for juices', 'fruits', 'each', 199, 30, 'products/lemons.jpg', 'https://example.com/lemons.jpg', TRUE, ARRAY['citrus', 'sour']),
+      ($2, 'Crunchy romaine for salad', 'vegetables', 'each', 229, 22, 'products/romaine.jpg', 'https://example.com/romaine.jpg', TRUE, ARRAY['lettuce', 'greens'])`,
+      [`Search Lemons ${suffix}`, `Search Romaine ${suffix}`]
+    );
+
+    const typoSearch = await app.inject({
+      method: "GET",
+      url: "/v1/catalog?q=lemonss"
+    });
+    expect(typoSearch.statusCode).toBe(200);
+    const typoBody = typoSearch.json() as {
+      products: Array<Record<string, unknown>>;
+    };
+    expect(
+      typoBody.products.some((product) =>
+        String(product.name).includes(`Search Lemons ${suffix}`)
+      )
+    ).toBe(true);
+
+    const keywordSearch = await app.inject({
+      method: "GET",
+      url: "/v1/catalog?category=vegetables&q=citrus"
+    });
+    expect(keywordSearch.statusCode).toBe(200);
+    const keywordBody = keywordSearch.json() as {
+      products: Array<Record<string, unknown>>;
+    };
+    const lemonProduct = keywordBody.products.find((product) =>
+      String(product.name).includes(`Search Lemons ${suffix}`)
+    );
+    expect(lemonProduct).toBeDefined();
+    expect(lemonProduct).not.toHaveProperty("searchKeywords");
+    expect(lemonProduct).not.toHaveProperty("search_keywords");
+  });
+
   it("returns pickup slots", async () => {
     const response = await app.inject({
       method: "GET",

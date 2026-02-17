@@ -38,10 +38,14 @@ final class ApiClient: ObservableObject {
         isDemoMode = enabled
     }
 
-    func fetchCatalog(category: ProductCategory?) async throws -> [Product] {
+    func fetchCatalog(
+        category: ProductCategory?,
+        query: String? = nil,
+        limit: Int = 100
+    ) async throws -> [Product] {
         if isDemoMode {
             return try await runDemo {
-                demoStore.catalog(category: category)
+                demoStore.catalog(category: category, query: query, limit: limit)
             }
         }
 
@@ -49,8 +53,16 @@ final class ApiClient: ObservableObject {
             url: baseURL.appending(path: "/v1/catalog"),
             resolvingAgainstBaseURL: false
         )!
+        var queryItems: [URLQueryItem] = []
         if let category {
-            components.queryItems = [URLQueryItem(name: "category", value: category.rawValue)]
+            queryItems.append(URLQueryItem(name: "category", value: category.rawValue))
+        }
+        if let query {
+            queryItems.append(URLQueryItem(name: "q", value: query))
+        }
+        queryItems.append(URLQueryItem(name: "limit", value: String(limit)))
+        if !queryItems.isEmpty {
+            components.queryItems = queryItems
         }
 
         let request = URLRequest(url: components.url!)
